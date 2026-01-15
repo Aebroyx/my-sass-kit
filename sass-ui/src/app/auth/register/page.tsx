@@ -3,9 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useDispatch } from 'react-redux';
-import { setCredentials } from '@/store/features/authSlice';
-import type { AppDispatch } from '@/store/store';
 import { userService } from '@/services/userService';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,13 +10,7 @@ import Image from 'next/image';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const dispatch = useDispatch<AppDispatch>();
-  const { isAuthenticated } = useAuth({ requireAuth: false }); // This page doesn't require auth
-
-  // If user is already authenticated, the hook will handle the redirect
-  if (isAuthenticated) {
-    return null; // or a loading spinner
-  }
+  useAuth({ requireAuth: false }); // This page doesn't require auth, but hook handles redirects
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -29,6 +20,9 @@ export default function RegisterPage() {
     confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+
+  // If user is already authenticated, the useAuth hook will handle the redirect
+  // No need to return early here as it would violate React's rules of hooks
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,27 +43,16 @@ export default function RegisterPage() {
 
     try {
       // Call the API
-      const response = await userService.register({
+      await userService.register({
         username: formData.username,
         email: formData.email,
         password: formData.password,
         name: formData.fullName,
       });
 
-      // Update Redux state with the response
-      dispatch(setCredentials({ 
-        user: {
-          id: response.id,
-          name: response.name,
-          email: response.email,
-          username: response.username,
-          role: response.role,
-        }
-      }));
-      
       // Show success message
-      toast.success('Account created successfully! Redirecting to login...');
-      
+      toast.success('Account created successfully! Please login to continue.');
+
       // Redirect to login page after a short delay
       setTimeout(() => {
         router.push('/auth/login');
