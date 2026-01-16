@@ -23,8 +23,8 @@ type UserQueryParams struct {
 	Page     int    `json:"page" form:"page" binding:"min=1"`
 	PageSize int    `json:"pageSize" form:"pageSize" binding:"min=1,max=100"`
 	Search   string `json:"search" form:"search"`
-	Role     string `json:"role" form:"role"`
-	SortBy   string `json:"sortBy" form:"sortBy" binding:"omitempty,oneof=name email role created_at"`
+	RoleID   uint   `json:"role_id" form:"role_id"`
+	SortBy   string `json:"sortBy" form:"sortBy" binding:"omitempty,oneof=name email role_id created_at"`
 	SortDesc bool   `json:"sortDesc" form:"sortDesc"`
 }
 
@@ -67,18 +67,30 @@ func (s *UserService) Register(req *models.RegisterRequest) (*models.RegisterRes
 		return nil, err
 	}
 
-	// Create new user
+	// Get default role
+	var defaultRole models.Role
+	if err := s.db.Where("is_default = ?", true).First(&defaultRole).Error; err != nil {
+		// Fallback to user role if no default
+		if err := s.db.Where("name = ?", "user").First(&defaultRole).Error; err != nil {
+			return nil, errors.New("default role not found")
+		}
+	}
+
+	// Create new user with RoleID
 	user := models.Users{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		Name:     req.Name,
-		Role:     "user", // Default role
+		RoleID:   defaultRole.ID,
 	}
 
 	if err := s.db.Create(&user).Error; err != nil {
 		return nil, err
 	}
+
+	// Preload role for response
+	s.db.Preload("Role").First(&user, user.ID)
 
 	// Return user data without password
 	return &models.RegisterResponse{
@@ -86,15 +98,24 @@ func (s *UserService) Register(req *models.RegisterRequest) (*models.RegisterRes
 		Username: user.Username,
 		Email:    user.Email,
 		Name:     user.Name,
-		Role:     user.Role,
+		Role: models.RoleResponse{
+			ID:          user.Role.ID,
+			Name:        user.Role.Name,
+			DisplayName: user.Role.DisplayName,
+			Description: user.Role.Description,
+			IsDefault:   user.Role.IsDefault,
+			IsActive:    user.Role.IsActive,
+			CreatedAt:   user.Role.CreatedAt,
+			UpdatedAt:   user.Role.UpdatedAt,
+		},
 	}, nil
 }
 
 // Login authenticates a user and returns tokens
 func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
-	// Find user by username
+	// Find user by username with role preloaded
 	var user models.Users
-	if err := s.db.Where("username = ?", req.Username).First(&user).Error; err != nil {
+	if err := s.db.Preload("Role").Where("username = ?", req.Username).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("invalid username or password")
 		}
@@ -124,7 +145,16 @@ func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, er
 			Username: user.Username,
 			Email:    user.Email,
 			Name:     user.Name,
-			Role:     user.Role,
+			Role: models.RoleResponse{
+				ID:          user.Role.ID,
+				Name:        user.Role.Name,
+				DisplayName: user.Role.DisplayName,
+				Description: user.Role.Description,
+				IsDefault:   user.Role.IsDefault,
+				IsActive:    user.Role.IsActive,
+				CreatedAt:   user.Role.CreatedAt,
+				UpdatedAt:   user.Role.UpdatedAt,
+			},
 		},
 		Token: models.TokenResponse{
 			AccessToken:  accessToken,
@@ -142,7 +172,8 @@ func (s *UserService) generateToken(user models.Users, expiry time.Duration) (st
 		UserID:   user.ID,
 		Username: user.Username,
 		Email:    user.Email,
-		Role:     user.Role,
+		RoleID:   user.RoleID,
+		RoleName: user.Role.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -170,7 +201,7 @@ func (s *UserService) GetAllUsers(params pagination.QueryParams) (*pagination.Pa
 		},
 		SearchFields: []string{"name", "email", "username"},
 		FilterFields: map[string]string{
-			"role":       "role",
+			"role_id":    "role_id",
 			"name":       "name",
 			"email":      "email",
 			"username":   "username",
@@ -190,56 +221,22 @@ func (s *UserService) GetAllUsers(params pagination.QueryParams) (*pagination.Pa
 		SortFields: []string{
 			"name",
 			"email",
-			"role",
+			"role_id",
 			"created_at",
 			"updated_at",
 		},
 		DefaultSort:  "created_at",
 		DefaultOrder: "DESC",
+		Relations:    []string{"Role"},
 	}
 
 	paginator := pagination.NewPaginator(s.db)
 	return paginator.Paginate(params, config)
-
-	// Pagination Example (with join)
-	// GetAllUsers retrieves users with pagination, search, and filters
-	// config := pagination.PaginationConfig{
-	// 	Model: &models.Users{},
-	// 	BaseCondition: map[string]interface{}{
-	// 		"is_deleted": false,
-	// 	},
-	// 	SearchFields: []string{"name", "email", "username"},
-	// 	FilterFields: map[string]string{
-	// 		"role": "role",
-	// 	},
-	// 	DateFields: map[string]pagination.DateField{
-	// 		"created_at": {
-	// 			Start: "created_at",
-	// 			End:   "created_at",
-	// 		},
-	// 		"updated_at": {
-	// 			Start: "updated_at",
-	// 			End:   "updated_at",
-	// 		},
-	// 	},
-	// 	SortFields: []string{
-	// 		"name",
-	// 		"email",
-	// 		"role",
-	// 		"created_at",
-	// 		"updated_at",
-	// 	},
-	// 	DefaultSort:  "created_at",
-	// 	DefaultOrder: "DESC",
-	// }
-
-	// paginator := pagination.NewPaginator(s.db)
-	// return paginator.Paginate(params, config)
 }
 
 func (s *UserService) GetUserById(id string) (models.Users, error) {
 	var user models.Users
-	if err := s.db.Where("id = ?", id).First(&user).Error; err != nil {
+	if err := s.db.Preload("Role").Where("id = ?", id).First(&user).Error; err != nil {
 		return models.Users{}, err
 	}
 	return user, nil
@@ -262,6 +259,12 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.CreateU
 		return nil, err
 	}
 
+	// Validate role exists
+	var role models.Role
+	if err := s.db.First(&role, req.RoleID).Error; err != nil {
+		return nil, errors.New("invalid role")
+	}
+
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -274,35 +277,55 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.CreateU
 		Email:    req.Email,
 		Password: string(hashedPassword),
 		Name:     req.Name,
-		Role:     req.Role,
+		RoleID:   req.RoleID,
 	}
 
 	if err := s.db.Create(&user).Error; err != nil {
 		return nil, err
 	}
 
+	// Preload role for response
+	s.db.Preload("Role").First(&user, user.ID)
+
 	// Return user data without password
 	return &models.CreateUserResponse{
-		ID:        user.ID,
-		Username:  user.Username,
-		Email:     user.Email,
-		Name:      user.Name,
-		Role:      user.Role,
+		ID:       user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		Name:     user.Name,
+		Role: models.RoleResponse{
+			ID:          user.Role.ID,
+			Name:        user.Role.Name,
+			DisplayName: user.Role.DisplayName,
+			Description: user.Role.Description,
+			IsDefault:   user.Role.IsDefault,
+			IsActive:    user.Role.IsActive,
+			CreatedAt:   user.Role.CreatedAt,
+			UpdatedAt:   user.Role.UpdatedAt,
+		},
 		CreatedAt: user.CreatedAt,
 	}, nil
 }
 
 func (s *UserService) UpdateUser(id string, req *models.UpdateUserRequest) (*models.Users, error) {
 	var user models.Users
-	if err := s.db.Where("id = ?", id).First(&user).Error; err != nil {
+	if err := s.db.Preload("Role").Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, err
+	}
+
+	// Validate role exists if being changed
+	if req.RoleID != user.RoleID {
+		var role models.Role
+		if err := s.db.First(&role, req.RoleID).Error; err != nil {
+			return nil, errors.New("invalid role")
+		}
 	}
 
 	// Update user fields
 	user.Username = req.Username
 	user.Email = req.Email
 	user.Name = req.Name
-	user.Role = req.Role
+	user.RoleID = req.RoleID
 
 	// Only update password if provided
 	if req.Password != "" {
@@ -317,6 +340,9 @@ func (s *UserService) UpdateUser(id string, req *models.UpdateUserRequest) (*mod
 	if err := s.db.Model(&user).Updates(&user).Error; err != nil {
 		return nil, err
 	}
+
+	// Reload with role
+	s.db.Preload("Role").First(&user, user.ID)
 
 	return &user, nil
 }

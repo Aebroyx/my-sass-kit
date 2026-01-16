@@ -5,16 +5,17 @@ import (
 	"log"
 
 	"github.com/Aebroyx/sass-api/internal/config"
-	"github.com/Aebroyx/sass-api/internal/domain/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
+// DB wraps the gorm.DB instance
 type DB struct {
 	*gorm.DB
 }
 
+// NewConnection creates a new database connection
 func NewConnection(cfg *config.Config) (*DB, error) {
 	// Configure GORM logger
 	gormLogger := logger.New(
@@ -32,10 +33,20 @@ func NewConnection(cfg *config.Config) (*DB, error) {
 		return nil, fmt.Errorf("failed to connect to database: %v", err)
 	}
 
-	// Auto-migrate models
-	if err := db.AutoMigrate(&models.Users{}); err != nil {
-		return nil, fmt.Errorf("failed to migrate database: %v", err)
+	return &DB{db}, nil
+}
+
+// Initialize runs migrations and seeders
+func (db *DB) Initialize() error {
+	// Run auto-migrations
+	if err := RunMigrations(db.DB); err != nil {
+		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	return &DB{db}, nil
+	// Run seeders
+	if err := RunSeeders(db.DB); err != nil {
+		return fmt.Errorf("failed to run seeders: %w", err)
+	}
+
+	return nil
 }

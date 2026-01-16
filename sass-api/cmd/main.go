@@ -6,9 +6,8 @@ import (
 	"github.com/Aebroyx/sass-api/internal/config"
 	"github.com/Aebroyx/sass-api/internal/database"
 	"github.com/Aebroyx/sass-api/internal/handlers"
-	"github.com/Aebroyx/sass-api/internal/middleware"
+	"github.com/Aebroyx/sass-api/internal/routes"
 	"github.com/Aebroyx/sass-api/internal/services"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -23,83 +22,34 @@ func main() {
 		log.Fatalf("Invalid configuration: %v", err)
 	}
 
-	// Initialize database
+	// Initialize database connection
 	db, err := database.NewConnection(cfg)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
+	// Run migrations and seeders
+	if err := db.Initialize(); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
+	}
+
 	// Initialize services
 	userService := services.NewUserService(db.DB, cfg)
+	roleService := services.NewRoleService(db.DB, cfg)
+	menuService := services.NewMenuService(db.DB, cfg)
+	rightsAccessService := services.NewRightsAccessService(db.DB, cfg)
 
 	// Initialize handlers
-	authHandler := handlers.NewAuthHandler(userService)
-	userHandler := handlers.NewUserHandler(userService)
-
-	// Initialize router
-	router := gin.New() // Use gin.New() instead of gin.Default() to avoid default middleware
-
-	// Add logger middleware
-	router.Use(gin.Logger())
-
-	// Add CORS middleware
-	router.Use(func(c *gin.Context) {
-		// Log incoming request
-		log.Printf("Incoming request: %s %s", c.Request.Method, c.Request.URL.Path)
-
-		// Get allowed origins from config
-		allowedOrigin := cfg.CORSAllowedOrigins
-		if allowedOrigin == "" {
-			allowedOrigin = "http://localhost:3001" // fallback
-		}
-
-		// Set CORS headers
-		c.Writer.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400") // 24 hours
-
-		// Handle preflight
-		if c.Request.Method == "OPTIONS" {
-			log.Printf("Handling OPTIONS request for: %s", c.Request.URL.Path)
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	})
-
-	// Public routes
-	public := router.Group("/api")
-	{
-		// Auth routes
-		auth := public.Group("/auth")
-		{
-			auth.POST("/register", authHandler.Register)
-			auth.POST("/login", authHandler.Login)
-		}
+	h := &routes.Handlers{
+		Auth:         handlers.NewAuthHandler(userService),
+		User:         handlers.NewUserHandler(userService),
+		Role:         handlers.NewRoleHandler(roleService),
+		Menu:         handlers.NewMenuHandler(menuService),
+		RightsAccess: handlers.NewRightsAccessHandler(rightsAccessService),
 	}
 
-	// Protected routes
-	protected := router.Group("/api")
-	protected.Use(middleware.Auth(cfg.JWTSecret, db.DB))
-	{
-		// Add your protected routes here
-		// AUTH ROUTES
-		protected.GET("/me", authHandler.GetMe)
-		protected.POST("/auth/logout", authHandler.Logout)
-		// USER ROUTES
-		protected.GET("/users", userHandler.GetAllUsers)
-		user := protected.Group("/user")
-		{
-			user.GET("/:id", userHandler.GetUserById)
-			user.POST("/create", userHandler.CreateUser)
-			user.PUT("/:id", userHandler.UpdateUser)
-			user.DELETE("/:id", userHandler.DeleteUser)
-			user.PUT("/:id/soft-delete", userHandler.SoftDeleteUser)
-		}
-	}
+	// Setup router
+	router := routes.SetupRouter(cfg, db.DB, h)
 
 	// Start server
 	log.Printf("Server starting on %s", cfg.GetServerAddr())

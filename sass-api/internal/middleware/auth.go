@@ -54,28 +54,39 @@ func Auth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Get user from database
+		// Get user from database with Role preloaded
 		var user models.Users
-		if err := db.First(&user, claims.UserID).Error; err != nil {
+		if err := db.Preload("Role").First(&user, claims.UserID).Error; err != nil {
 			log.Printf("Auth middleware: user not found in database for ID %d", claims.UserID)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			c.Abort()
 			return
 		}
 
-		// Create user response object
+		// Create user response object with role details
 		userResponse := models.RegisterResponse{
 			ID:       user.ID,
 			Username: user.Username,
 			Email:    user.Email,
 			Name:     user.Name,
-			Role:     user.Role,
+			Role: models.RoleResponse{
+				ID:          user.Role.ID,
+				Name:        user.Role.Name,
+				DisplayName: user.Role.DisplayName,
+				Description: user.Role.Description,
+				IsDefault:   user.Role.IsDefault,
+				IsActive:    user.Role.IsActive,
+				CreatedAt:   user.Role.CreatedAt,
+				UpdatedAt:   user.Role.UpdatedAt,
+			},
 		}
 
 		log.Printf("Auth middleware: setting user in context: %+v", userResponse)
 
 		// Set user in context
 		c.Set("user", userResponse)
+		c.Set("role", user.Role.Name)
+		c.Set("roleID", user.RoleID)
 
 		c.Next()
 	}
