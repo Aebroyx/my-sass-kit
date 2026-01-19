@@ -28,8 +28,8 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	// Run migrations and seeders
-	if err := db.Initialize(); err != nil {
+	// Run migrations and seeders (if enabled)
+	if err := db.Initialize(cfg); err != nil {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 

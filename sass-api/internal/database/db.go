@@ -36,8 +36,16 @@ func NewConnection(cfg *config.Config) (*DB, error) {
 	return &DB{db}, nil
 }
 
-// Initialize runs migrations and seeders
-func (db *DB) Initialize() error {
+// Initialize runs migrations and seeders based on configuration
+func (db *DB) Initialize(cfg *config.Config) error {
+	// Check if auto-migration is enabled
+	if !cfg.DBAutoMigrate {
+		log.Println("Auto-migration is disabled (DB_AUTO_MIGRATE=false)")
+		return nil
+	}
+
+	log.Println("Auto-migration is enabled")
+
 	// Run auto-migrations
 	if err := RunMigrations(db.DB); err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)

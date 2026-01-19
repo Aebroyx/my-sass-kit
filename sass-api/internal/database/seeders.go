@@ -9,76 +9,18 @@ import (
 )
 
 // RunSeeders runs all database seeders
+// Note: Default roles are now seeded during migration (see migration.go)
+// This function is available for additional seeding operations
 func RunSeeders(db *gorm.DB) error {
-	log.Println("Running database seeders...")
+	log.Println("Running additional database seeders...")
 
-	// Seed default roles
-	if err := seedDefaultRoles(db); err != nil {
-		return fmt.Errorf("failed to seed default roles: %w", err)
-	}
-
-	// Migrate existing users to default role (one-time migration for existing data)
-	if err := migrateExistingUsersToDefaultRole(db); err != nil {
-		log.Printf("Warning: Failed to migrate existing users: %v", err)
-	}
+	// Optional: Seed default menus
+	// Uncomment if you want to seed default menus on startup
+	// if err := SeedDefaultMenus(db); err != nil {
+	// 	log.Printf("Warning: Failed to seed default menus: %v", err)
+	// }
 
 	log.Println("Database seeders completed successfully")
-	return nil
-}
-
-// seedDefaultRoles creates default roles if they don't exist
-func seedDefaultRoles(db *gorm.DB) error {
-	defaultRoles := []models.Role{
-		{
-			Name:        "admin",
-			DisplayName: "Administrator",
-			Description: "Full system access",
-			IsDefault:   false,
-			IsActive:    true,
-		},
-		{
-			Name:        "user",
-			DisplayName: "User",
-			Description: "Standard user access",
-			IsDefault:   true,
-			IsActive:    true,
-		},
-	}
-
-	for _, role := range defaultRoles {
-		var existing models.Role
-		result := db.Where("name = ?", role.Name).First(&existing)
-		if result.Error == gorm.ErrRecordNotFound {
-			if err := db.Create(&role).Error; err != nil {
-				return fmt.Errorf("failed to create role %s: %w", role.Name, err)
-			}
-			log.Printf("Created default role: %s", role.Name)
-		}
-	}
-
-	return nil
-}
-
-// migrateExistingUsersToDefaultRole migrates users with role_id = 0 to default role
-func migrateExistingUsersToDefaultRole(db *gorm.DB) error {
-	// Get default role
-	var defaultRole models.Role
-	if err := db.Where("is_default = ?", true).First(&defaultRole).Error; err != nil {
-		// Fallback to user role if no default is set
-		if err := db.Where("name = ?", "user").First(&defaultRole).Error; err != nil {
-			return fmt.Errorf("default role not found: %w", err)
-		}
-	}
-
-	// Update users with RoleID = 0 (not yet migrated)
-	result := db.Model(&models.Users{}).
-		Where("role_id = 0 OR role_id IS NULL").
-		Update("role_id", defaultRole.ID)
-
-	if result.RowsAffected > 0 {
-		log.Printf("Migrated %d users to default role", result.RowsAffected)
-	}
-
 	return nil
 }
 

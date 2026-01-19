@@ -13,29 +13,100 @@ import (
 func RunMigrations(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 
-	// Define all models in the correct order for migration
-	// Order matters due to foreign key dependencies:
-	// 1. Role - no dependencies
-	// 2. Menu - self-referential (parent_id)
-	// 3. Users - depends on Role
-	// 4. RoleMenu - depends on Role, Menu
-	// 5. UserMenu - depends on Users, Menu
-	// 6. RightsAccess - depends on Users, Menu
-	modelsToMigrate := []interface{}{
-		&models.Role{},
-		&models.Menu{},
-		&models.Users{},
+	// Step 1: Migrate independent tables first (no FK dependencies)
+	log.Println("Step 1: Migrating Role and Menu tables...")
+	if err := db.AutoMigrate(&models.Role{}, &models.Menu{}); err != nil {
+		return fmt.Errorf("failed to migrate Role/Menu: %w", err)
+	}
+
+	// Step 2: Seed default roles BEFORE adding FK constraint to users
+	log.Println("Step 2: Seeding default roles...")
+	if err := seedDefaultRoles(db); err != nil {
+		return fmt.Errorf("failed to seed default roles: %w", err)
+	}
+
+	// Step 3: Update existing users to have valid role_id
+	log.Println("Step 3: Updating existing users with default role...")
+	if err := updateExistingUsersRole(db); err != nil {
+		log.Printf("Warning: Failed to update existing users: %v", err)
+	}
+
+	// Step 4: Now migrate Users table with FK constraint
+	log.Println("Step 4: Migrating Users table with foreign key...")
+	if err := db.AutoMigrate(&models.Users{}); err != nil {
+		return fmt.Errorf("failed to migrate Users: %w", err)
+	}
+
+	// Step 5: Migrate pivot/relationship tables
+	log.Println("Step 5: Migrating relationship tables...")
+	relationshipModels := []interface{}{
 		&models.RoleMenu{},
 		&models.UserMenu{},
 		&models.RightsAccess{},
 	}
-
-	// Run auto-migration for all models
-	if err := db.AutoMigrate(modelsToMigrate...); err != nil {
-		return fmt.Errorf("auto-migration failed: %w", err)
+	if err := db.AutoMigrate(relationshipModels...); err != nil {
+		return fmt.Errorf("failed to migrate relationship tables: %w", err)
 	}
 
 	log.Println("Database migrations completed successfully")
+	return nil
+}
+
+// updateExistingUsersRole updates users with invalid role_id to default role
+func updateExistingUsersRole(db *gorm.DB) error {
+	// Get default role
+	var defaultRole models.Role
+	if err := db.Where("is_default = ?", true).First(&defaultRole).Error; err != nil {
+		// Fallback to user role if no default is set
+		if err := db.Where("name = ?", "user").First(&defaultRole).Error; err != nil {
+			return fmt.Errorf("default role not found: %w", err)
+		}
+	}
+
+	// Update users with invalid RoleID
+	result := db.Model(&models.Users{}).
+		Where("role_id = 0 OR role_id IS NULL").
+		Update("role_id", defaultRole.ID)
+
+	if result.RowsAffected > 0 {
+		log.Printf("Updated %d existing users to default role (ID: %d)", result.RowsAffected, defaultRole.ID)
+	}
+
+	return nil
+}
+
+// seedDefaultRoles creates default roles if they don't exist
+func seedDefaultRoles(db *gorm.DB) error {
+	defaultRoles := []models.Role{
+		{
+			Name:        "admin",
+			DisplayName: "Administrator",
+			Description: "Full system access",
+			IsDefault:   false,
+			IsActive:    true,
+		},
+		{
+			Name:        "user",
+			DisplayName: "User",
+			Description: "Standard user access",
+			IsDefault:   true,
+			IsActive:    true,
+		},
+	}
+
+	for _, role := range defaultRoles {
+		var existing models.Role
+		result := db.Where("name = ?", role.Name).First(&existing)
+		if result.Error == gorm.ErrRecordNotFound {
+			if err := db.Create(&role).Error; err != nil {
+				return fmt.Errorf("failed to create role %s: %w", role.Name, err)
+			}
+			log.Printf("Created default role: %s (ID: %d)", role.Name, role.ID)
+		} else {
+			log.Printf("Role already exists: %s (ID: %d)", existing.Name, existing.ID)
+		}
+	}
+
 	return nil
 }
 

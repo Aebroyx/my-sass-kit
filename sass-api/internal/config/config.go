@@ -15,12 +15,13 @@ type Config struct {
 	ServerHost  string
 
 	// Database config
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBSSLMode  string
+	DBHost        string
+	DBPort        string
+	DBUser        string
+	DBPassword    string
+	DBName        string
+	DBSSLMode     string
+	DBAutoMigrate bool
 
 	// JWT config
 	JWTSecret string
@@ -53,12 +54,13 @@ func Load() (*Config, error) {
 		ServerHost:  getEnv("SERVER_HOST", "localhost"),
 
 		// Database config
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "sass_db"),
-		DBSSLMode:  getEnv("DB_SSL_MODE", "disable"),
+		DBHost:        getEnv("DB_HOST", "localhost"),
+		DBPort:        getEnv("DB_PORT", "5432"),
+		DBUser:        getEnv("DB_USER", "postgres"),
+		DBPassword:    getEnv("DB_PASSWORD", ""),
+		DBName:        getEnv("DB_NAME", "sass_db"),
+		DBSSLMode:     getEnv("DB_SSL_MODE", "disable"),
+		DBAutoMigrate: getEnv("DB_AUTO_MIGRATE", "true") == "true",
 
 		// JWT config
 		JWTSecret: getEnv("JWT_SECRET", ""),
