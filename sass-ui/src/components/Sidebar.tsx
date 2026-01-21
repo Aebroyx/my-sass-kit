@@ -330,6 +330,7 @@ interface MenuItemComponentProps {
   expandedMenus: Set<number>;
   toggleExpanded: (id: number) => void;
   onExpandSidebar?: () => void;
+  enableExpandAnimation: boolean;
 }
 
 function MenuItemComponent({
@@ -340,6 +341,7 @@ function MenuItemComponent({
   expandedMenus,
   toggleExpanded,
   onExpandSidebar,
+  enableExpandAnimation,
 }: MenuItemComponentProps) {
   const router = useRouter();
   const hasChildren = menu.children && menu.children.length > 0;
@@ -377,8 +379,8 @@ function MenuItemComponent({
         onClick={handleClick}
         className={classNames(
           isActive || isChildActive
-            ? 'bg-primary/10 text-primary'
-            : 'text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary',
+            ? 'bg-gray-100 dark:bg-gray-900/50 text-primary border-l-4 border-transparent'
+            : 'text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary border-l-4 border-transparent',
           'group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-all duration-200',
           depth > 0 ? 'pl-10' : '',
           collapsed && depth === 0 ? 'justify-center' : ''
@@ -415,32 +417,53 @@ function MenuItemComponent({
 
       {/* Children */}
       {hasChildren && !collapsed && (
-        <Transition
-          show={isExpanded}
-          as="div"
-          className="overflow-hidden"
-          enter="transition-[max-height] duration-300 ease-out"
-          enterFrom="max-h-0"
-          enterTo="max-h-96"
-          leave="transition-all duration-200 ease-in"
-          leaveFrom="opacity-100 translate-y-0 max-h-96"
-          leaveTo="opacity-0 -translate-y-1 max-h-0"
-        >
-          <ul className="mt-1 space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
-            {menu.children?.map((child) => (
-              <MenuItemComponent
-                key={child.id}
-                menu={child}
-                pathname={pathname}
-                depth={depth + 1}
-                collapsed={collapsed}
-                expandedMenus={expandedMenus}
-                toggleExpanded={toggleExpanded}
-                onExpandSidebar={onExpandSidebar}
-              />
-            ))}
-          </ul>
-        </Transition>
+        enableExpandAnimation ? (
+          <Transition
+            show={isExpanded}
+            as="div"
+            className="overflow-hidden"
+            enter="transition-[max-height,opacity] duration-300 ease-out"
+            enterFrom="max-h-0 opacity-0"
+            enterTo="max-h-96 opacity-100"
+            leave="transition-all duration-200 ease-in"
+            leaveFrom="opacity-100 translate-y-0 max-h-96"
+            leaveTo="opacity-0 -translate-y-1 max-h-0"
+          >
+            <ul className="mt-1 space-y-1">
+              {menu.children?.map((child) => (
+                <MenuItemComponent
+                  key={child.id}
+                  menu={child}
+                  pathname={pathname}
+                  depth={depth + 1}
+                  collapsed={collapsed}
+                  expandedMenus={expandedMenus}
+                  toggleExpanded={toggleExpanded}
+                  onExpandSidebar={onExpandSidebar}
+                  enableExpandAnimation={enableExpandAnimation}
+                />
+              ))}
+            </ul>
+          </Transition>
+        ) : isExpanded ? (
+          <div className="overflow-hidden">
+            <ul className="mt-1 space-y-1">
+              {menu.children?.map((child) => (
+                <MenuItemComponent
+                  key={child.id}
+                  menu={child}
+                  pathname={pathname}
+                  depth={depth + 1}
+                  collapsed={collapsed}
+                  expandedMenus={expandedMenus}
+                  toggleExpanded={toggleExpanded}
+                  onExpandSidebar={onExpandSidebar}
+                  enableExpandAnimation={enableExpandAnimation}
+                />
+              ))}
+            </ul>
+          </div>
+        ) : null
       )}
     </li>
   );
@@ -541,6 +564,7 @@ export function Sidebar({
   const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
+  const [enableExpandAnimation, setEnableExpandAnimation] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
 
   const { data: userMenus, isLoading } = useGetUserMenus();
@@ -582,11 +606,23 @@ export function Sidebar({
     // Only set on initial load, don't override user's manual toggle state
     setExpandedMenus(prev => {
       if (prev.size === 0) {
+        // Avoid "expanding" animation on initial auto-expand (and any remount).
+        // We'll enable animations right after the initial state is applied.
+        setEnableExpandAnimation(false);
         return getAllParentIds(menuTree);
       }
       return prev;
     });
   }, [userMenus, menuTree, searchQuery]);
+
+  useEffect(() => {
+    // Once we have any expanded state (either auto-expanded or user-expanded),
+    // allow animations for subsequent manual toggles.
+    if (expandedMenus.size > 0) {
+      const id = requestAnimationFrame(() => setEnableExpandAnimation(true));
+      return () => cancelAnimationFrame(id);
+    }
+  }, [expandedMenus.size]);
 
   // Auto-expand menus when searching
   useEffect(() => {
@@ -686,6 +722,7 @@ export function Sidebar({
                     expandedMenus={expandedMenus}
                     toggleExpanded={toggleExpanded}
                     onExpandSidebar={() => handleSetCollapsed(false)}
+                    enableExpandAnimation={enableExpandAnimation}
                   />
                 ))}
               </ul>
