@@ -122,6 +122,7 @@ import {
   MinusIcon,
   PlusIcon,
   XCircleIcon,
+  CubeTransparentIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import ThemeToggle from './ThemeToggle';
@@ -328,6 +329,7 @@ interface MenuItemComponentProps {
   collapsed?: boolean;
   expandedMenus: Set<number>;
   toggleExpanded: (id: number) => void;
+  onExpandSidebar?: () => void;
 }
 
 function MenuItemComponent({
@@ -337,6 +339,7 @@ function MenuItemComponent({
   collapsed = false,
   expandedMenus,
   toggleExpanded,
+  onExpandSidebar,
 }: MenuItemComponentProps) {
   const router = useRouter();
   const hasChildren = menu.children && menu.children.length > 0;
@@ -351,6 +354,12 @@ function MenuItemComponent({
 
   const handleClick = () => {
     if (hasChildren) {
+      // If sidebar is collapsed (desktop), expand it so children can be shown.
+      if (collapsed && depth === 0) {
+        onExpandSidebar?.();
+        if (!isExpanded) toggleExpanded(menu.id);
+        return;
+      }
       toggleExpanded(menu.id);
     } else if (menu.path) {
       router.push(menu.path);
@@ -383,37 +392,55 @@ function MenuItemComponent({
             'size-5 shrink-0 transition-colors duration-200',
           )}
         />
-        {!collapsed && (
-          <>
-            <span className="flex-1 text-left truncate">{menu.name}</span>
-            {hasChildren && (
-              <ChevronRightIcon
-                aria-hidden="true"
-                className={classNames(
-                  'size-4 shrink-0 text-gray-400 transition-transform duration-200',
-                  isExpanded ? 'rotate-90' : ''
-                )}
-              />
-            )}
-          </>
-        )}
+        <div
+          className={classNames(
+            'flex min-w-0 flex-1 items-center gap-x-2 overflow-hidden transition-[max-width,opacity] ease-in-out',
+            // Animate both expand + collapse (width + fade) for smoother feel.
+            collapsed ? 'max-w-0 opacity-0 duration-200' : 'max-w-[40rem] opacity-100 duration-200'
+          )}
+          aria-hidden={collapsed}
+        >
+          <span className="flex-1 text-left truncate">{menu.name}</span>
+          {hasChildren && (
+            <ChevronRightIcon
+              aria-hidden="true"
+              className={classNames(
+                'size-4 shrink-0 text-gray-400 transition-transform duration-200',
+                isExpanded ? 'rotate-90' : ''
+              )}
+            />
+          )}
+        </div>
       </button>
 
       {/* Children */}
-      {hasChildren && isExpanded && !collapsed && (
-        <ul className="mt-1 space-y-1">
-          {menu.children?.map((child) => (
-            <MenuItemComponent
-              key={child.id}
-              menu={child}
-              pathname={pathname}
-              depth={depth + 1}
-              collapsed={collapsed}
-              expandedMenus={expandedMenus}
-              toggleExpanded={toggleExpanded}
-            />
-          ))}
-        </ul>
+      {hasChildren && !collapsed && (
+        <Transition
+          show={isExpanded}
+          as="div"
+          className="overflow-hidden"
+          enter="transition-[max-height] duration-300 ease-out"
+          enterFrom="max-h-0"
+          enterTo="max-h-96"
+          leave="transition-all duration-200 ease-in"
+          leaveFrom="opacity-100 translate-y-0 max-h-96"
+          leaveTo="opacity-0 -translate-y-1 max-h-0"
+        >
+          <ul className="mt-1 space-y-1 animate-in fade-in slide-in-from-top-1 duration-300">
+            {menu.children?.map((child) => (
+              <MenuItemComponent
+                key={child.id}
+                menu={child}
+                pathname={pathname}
+                depth={depth + 1}
+                collapsed={collapsed}
+                expandedMenus={expandedMenus}
+                toggleExpanded={toggleExpanded}
+                onExpandSidebar={onExpandSidebar}
+              />
+            ))}
+          </ul>
+        </Transition>
       )}
     </li>
   );
@@ -581,7 +608,7 @@ export function Sidebar({
     });
   }, []);
 
-  const SidebarContent = ({ isMobile = false }: { isMobile?: boolean }) => (
+  const renderSidebarContent = (isMobile = false) => (
     <div className={classNames(
       'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-700 bg-background',
       isCollapsed && !isMobile ? 'px-3' : 'px-4',
@@ -593,24 +620,17 @@ export function Sidebar({
         isCollapsed && !isMobile ? 'justify-center' : ''
       )}>
         {isCollapsed && !isMobile ? (
-          <div className="relative h-8 w-8">
-            <Image
-              alt="Blade App Logo"
-              src="/the-blade-app-high-resolution-logo-transparent.png"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
-              priority
-            />
+          <div className="relative h-9 w-9">
+            <CubeTransparentIcon className="size-9 text-primary" />
           </div>
         ) : (
-          <div className="relative h-8 w-auto">
+          <div className="relative h-10 w-auto">
             <Image
               alt="Blade App Logo"
               src="/the-blade-app-high-resolution-logo-transparent.png"
-              width={120}
-              height={32}
-              className="h-8 w-auto"
+              width={240}
+              height={24}
+              className="h-10 w-auto object-contain"
               priority
             />
           </div>
@@ -665,6 +685,7 @@ export function Sidebar({
                     collapsed={isCollapsed && !isMobile}
                     expandedMenus={expandedMenus}
                     toggleExpanded={toggleExpanded}
+                    onExpandSidebar={() => handleSetCollapsed(false)}
                   />
                 ))}
               </ul>
@@ -796,7 +817,7 @@ export function Sidebar({
               </div>
             </TransitionChild>
 
-            <SidebarContent isMobile={true} />
+            {renderSidebarContent(true)}
           </DialogPanel>
         </div>
       </Dialog>
@@ -806,7 +827,7 @@ export function Sidebar({
         'hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:flex-col transition-all duration-300',
         isCollapsed ? 'lg:w-20' : 'lg:w-72'
       )}>
-        <SidebarContent />
+        {renderSidebarContent(false)}
       </div>
     </>
   );
