@@ -1,20 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { userService, GetUserResponse, GetAllUsersParams, PaginatedResponse } from '@/services/userService';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 // Create User Mutation
 export function useCreateUser() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
-    mutationFn: (data: { name: string; email: string; username: string; password: string; role: string }) => 
+    mutationFn: (data: { name: string; email: string; username: string; password: string; role_id: number }) =>
       userService.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success('User created successfully');
-      router.push('/users-management');
+      // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
       try {
@@ -55,14 +52,20 @@ export function useGetAllUsers(params: GetAllUsersParams) {
 // Update User Mutation
 export function useUpdateUser() {
   const queryClient = useQueryClient();
-  const router = useRouter();
-  
+
   return useMutation({
-    mutationFn: (data: { id: string; name: string; email: string; username: string; password: string; role: string }) => 
+    mutationFn: (data: {
+      id: string;
+      name: string;
+      email: string;
+      username: string;
+      password: string;
+      role_id: number;
+    }) =>
       userService.updateUser(data.id, {
         name: data.name,
         email: data.email,
-        role: data.role,
+        role_id: data.role_id,
         username: data.username,
         password: data.password || '',
       }),
@@ -70,29 +73,26 @@ export function useUpdateUser() {
       // Invalidate both queries to force a refetch
       queryClient.invalidateQueries({ queryKey: ['user', updatedUser.id] });
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      
-      toast.success('User updated successfully');
-      router.push('/users-management');
+      // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-        try {
-            const errorResponse = JSON.parse(error.message);
-            if (errorResponse.status === 'error' && errorResponse.message) {
-            toast.error(errorResponse.message);
-            } else {
-            toast.error('Failed to update user');
-            }
-        } catch {
-            toast.error('Failed to update user');
+      try {
+        const errorResponse = JSON.parse(error.message);
+        if (errorResponse.status === 'error' && errorResponse.message) {
+          toast.error(errorResponse.message);
+        } else {
+          toast.error('Failed to update user');
         }
-        },
-    });
+      } catch {
+        toast.error('Failed to update user');
+      }
+    },
+  });
 }
 
 // Delete User Mutation
 export function useDeleteUser() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: (id: number) => userService.deleteUser(id),
@@ -118,7 +118,6 @@ export function useDeleteUser() {
 // Soft Delete User Mutation
 export function useSoftDeleteUser() {
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   return useMutation({
     mutationFn: (id: number) => userService.softDeleteUser(id),

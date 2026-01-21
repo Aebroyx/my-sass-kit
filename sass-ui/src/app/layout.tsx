@@ -3,7 +3,6 @@ import localFont from 'next/font/local';
 import './globals.css';
 import Providers from '../components/Providers';
 import { ThemeProvider } from '../components/ThemeProvider';
-import ThemeToggle from '../components/ThemeToggle';
 import { Toaster } from 'react-hot-toast';
 import QueryProvider from "@/providers/QueryProvider";
 

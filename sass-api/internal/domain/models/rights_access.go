@@ -42,6 +42,20 @@ type UpdateRightsAccessRequest struct {
 	CanDelete *bool `json:"can_delete"`
 }
 
+// BulkUserRightsAccessRequest represents the request to bulk update user rights
+type BulkUserRightsAccessRequest struct {
+	Permissions []UserMenuPermission `json:"permissions" validate:"required,dive"`
+}
+
+// UserMenuPermission represents a single menu permission for a user
+type UserMenuPermission struct {
+	MenuID    uint  `json:"menu_id" validate:"required,min=1"`
+	CanRead   *bool `json:"can_read"`
+	CanWrite  *bool `json:"can_write"`
+	CanUpdate *bool `json:"can_update"`
+	CanDelete *bool `json:"can_delete"`
+}
+
 // RightsAccessResponse represents the response for rights access
 type RightsAccessResponse struct {
 	ID        uint         `json:"id"`

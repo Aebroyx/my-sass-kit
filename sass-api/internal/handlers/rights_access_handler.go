@@ -115,3 +115,51 @@ func (h *RightsAccessHandler) DeleteRightsAccess(c *gin.Context) {
 
 	common.SendSuccess(c, http.StatusOK, "Rights access deleted successfully", nil)
 }
+
+// BulkSaveUserRightsAccess handles POST /api/rights-access/user/:userId/bulk
+func (h *RightsAccessHandler) BulkSaveUserRightsAccess(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		common.SendError(c, http.StatusBadRequest, "Invalid user ID", common.CodeInvalidRequest, nil)
+		return
+	}
+
+	var req models.BulkUserRightsAccessRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.SendError(c, http.StatusBadRequest, "Invalid request body", common.CodeInvalidRequest, err.Error())
+		return
+	}
+
+	if err := h.validate.Struct(req); err != nil {
+		common.SendError(c, http.StatusBadRequest, "Validation failed", common.CodeValidationError, err.Error())
+		return
+	}
+
+	rightsAccess, err := h.rightsAccessService.BulkSaveUserRightsAccess(uint(userID), &req)
+	if err != nil {
+		if err.Error() == "user not found" {
+			common.SendError(c, http.StatusNotFound, "User not found", common.CodeNotFound, nil)
+		} else {
+			common.SendError(c, http.StatusInternalServerError, "Failed to save rights access", common.CodeInternalError, err.Error())
+		}
+		return
+	}
+
+	common.SendSuccess(c, http.StatusOK, "Rights access saved successfully", rightsAccess)
+}
+
+// DeleteAllUserRightsAccess handles DELETE /api/rights-access/user/:userId
+func (h *RightsAccessHandler) DeleteAllUserRightsAccess(c *gin.Context) {
+	userID, err := strconv.ParseUint(c.Param("userId"), 10, 32)
+	if err != nil {
+		common.SendError(c, http.StatusBadRequest, "Invalid user ID", common.CodeInvalidRequest, nil)
+		return
+	}
+
+	if err := h.rightsAccessService.DeleteAllUserRightsAccess(uint(userID)); err != nil {
+		common.SendError(c, http.StatusInternalServerError, "Failed to delete rights access", common.CodeInternalError, err.Error())
+		return
+	}
+
+	common.SendSuccess(c, http.StatusOK, "All rights access deleted successfully", nil)
+}

@@ -17,6 +17,5 @@ func RegisterUserRoutes(router *gin.RouterGroup, h *handlers.UserHandler) {
 		user.POST("/create", h.CreateUser)
 		user.PUT("/:id", h.UpdateUser)
 		user.DELETE("/:id", h.DeleteUser)
-		user.PUT("/:id/soft-delete", h.SoftDeleteUser)
 	}
 }

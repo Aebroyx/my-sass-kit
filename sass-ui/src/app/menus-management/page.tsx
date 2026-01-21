@@ -3,32 +3,32 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { Navigation } from '@/components/Navigation';
 import { DataTable, FilterField } from '@/components/ui/DataTable';
 import DeleteModal from '@/components/modals/DeleteModal';
-import { useDeleteUser, useGetAllUsers } from '@/hooks/useUser';
-import { GetUserResponse } from '@/services/userService';
+import { useDeleteMenu, useGetAllMenus } from '@/hooks/useMenu';
+import { MenuResponse } from '@/services/menuService';
 import { useDebounce } from '@/hooks/useDebounce';
 
-export default function UsersManagementPage() {
+export default function MenusManagementPage() {
   const router = useRouter();
 
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchInput, setSearchInput] = useState('');
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortDesc, setSortDesc] = useState(true);
+  const [sortBy, setSortBy] = useState('order_index');
+  const [sortDesc, setSortDesc] = useState(false);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   // Debounce search
   const search = useDebounce(searchInput, 300);
 
-  // Fetch users data
-  const { data, isLoading, error } = useGetAllUsers({
+  // Fetch menus data
+  const { data, isLoading, error } = useGetAllMenus({
     page,
     pageSize,
     search,
@@ -37,30 +37,30 @@ export default function UsersManagementPage() {
     filters,
   });
 
-  // Delete user mutation
-  const deleteUser = useDeleteUser();
+  // Delete menu mutation
+  const deleteMenu = useDeleteMenu();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [menuToDelete, setMenuToDelete] = useState<number | null>(null);
 
   // Handlers
   const openDeleteModal = (id: number) => {
-    setUserToDelete(id);
+    setMenuToDelete(id);
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteUser.mutateAsync(id);
+      await deleteMenu.mutateAsync(id);
       setIsDeleteModalOpen(false);
-      setUserToDelete(null);
+      setMenuToDelete(null);
     } catch (error) {
       console.error('Delete failed:', error);
     }
   };
 
   const handleConfirmDelete = () => {
-    if (!userToDelete) return;
-    handleDelete(userToDelete);
+    if (!menuToDelete) return;
+    handleDelete(menuToDelete);
   };
 
   const handleSearch = (value: string) => {
@@ -79,11 +79,11 @@ export default function UsersManagementPage() {
   };
 
   // Define table columns using TanStack Table format
-  const columns = useMemo<ColumnDef<GetUserResponse>[]>(
+  const columns = useMemo<ColumnDef<MenuResponse>[]>(
     () => [
       {
         accessorKey: 'name',
-        header: 'Name',
+        header: 'Menu Name',
         cell: ({ row }) => (
           <span className="font-medium text-gray-900 dark:text-gray-100">
             {row.original.name}
@@ -91,20 +91,53 @@ export default function UsersManagementPage() {
         ),
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: 'path',
+        header: 'Path',
         cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.email}
+          <span className="font-mono text-xs text-gray-600 dark:text-gray-400">
+            {row.original.path}
           </span>
         ),
       },
       {
-        accessorKey: 'role',
-        header: 'Role',
+        accessorKey: 'icon',
+        header: 'Icon',
         cell: ({ row }) => (
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary dark:bg-primary/20">
-            {row.original.role?.display_name || row.original.role?.name || 'N/A'}
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {row.original.icon}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'order_index',
+        header: 'Order',
+        cell: ({ row }) => (
+          <span className="text-gray-500 dark:text-gray-400">
+            {row.original.order_index}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'parent_id',
+        header: 'Parent',
+        cell: ({ row }) => (
+          <span className="text-gray-500 dark:text-gray-400">
+            {row.original.parent_id ? `ID: ${row.original.parent_id}` : 'Root'}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'is_active',
+        header: 'Status',
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              row.original.is_active
+                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+            }`}
+          >
+            {row.original.is_active ? 'Active' : 'Inactive'}
           </span>
         ),
       },
@@ -120,32 +153,21 @@ export default function UsersManagementPage() {
         ),
       },
       {
-        accessorKey: 'updated_at',
-        header: 'Updated At',
-        cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.updated_at
-              ? format(new Date(row.original.updated_at), 'yyyy-MM-dd HH:mm')
-              : '-'}
-          </span>
-        ),
-      },
-      {
         id: 'actions',
         header: '',
         cell: ({ row }) => (
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => router.push(`/users-management/${row.original.id}`)}
+              onClick={() => router.push(`/menus-management/${row.original.id}`)}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-              title="View user"
+              title="Edit menu"
             >
-              <EyeIcon className="h-5 w-5" />
+              <PencilIcon className="h-5 w-5" />
             </button>
             <button
               onClick={() => openDeleteModal(row.original.id)}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title="Delete user"
+              title="Delete menu"
             >
               <TrashIcon className="h-5 w-5" />
             </button>
@@ -159,12 +181,12 @@ export default function UsersManagementPage() {
   // Define filter fields
   const filterFields: FilterField[] = [
     {
-      key: 'role',
-      label: 'Role',
+      key: 'is_active',
+      label: 'Status',
       type: 'select',
       options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'user', label: 'User' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
       ],
     },
     {
@@ -173,13 +195,8 @@ export default function UsersManagementPage() {
       type: 'text',
     },
     {
-      key: 'email',
-      label: 'Email',
-      type: 'text',
-    },
-    {
-      key: 'username',
-      label: 'Username',
+      key: 'path',
+      label: 'Path',
       type: 'text',
     },
   ];
@@ -191,7 +208,7 @@ export default function UsersManagementPage() {
     return (
       <Navigation>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch users'}
+          Error: {error instanceof Error ? error.message : 'Failed to fetch menus'}
         </div>
       </Navigation>
     );
@@ -199,12 +216,12 @@ export default function UsersManagementPage() {
 
   return (
     <Navigation>
-      <DataTable<GetUserResponse>
+      <DataTable<MenuResponse>
         columns={columns}
         data={data?.data || []}
         isLoading={isLoading}
-        title="Users Management"
-        description="A list of all users in your application including their name, email, and role."
+        title="Menu Management"
+        description="Manage navigation menus and their permissions across your application."
         // Pagination
         page={page}
         pageSize={pageSize}
@@ -216,7 +233,7 @@ export default function UsersManagementPage() {
           setPage(1);
         }}
         // Search
-        searchPlaceholder="Search users..."
+        searchPlaceholder="Search menus..."
         onSearch={handleSearch}
         // Sorting
         sortBy={sortBy}
@@ -227,19 +244,19 @@ export default function UsersManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        onAdd={() => router.push('/users-management/add')}
-        addButtonText="Add User"
+        onAdd={() => router.push('/menus-management/add')}
+        addButtonText="Add Menu"
         // Empty state
         emptyState={
           <div className="py-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No users found
+              No menus found
             </p>
             <button
-              onClick={() => router.push('/users-management/add')}
+              onClick={() => router.push('/menus-management/add')}
               className="mt-2 text-sm font-medium text-primary hover:text-primary-dark"
             >
-              Add your first user
+              Add your first menu
             </button>
           </div>
         }
@@ -249,11 +266,11 @@ export default function UsersManagementPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          setUserToDelete(null);
+          setMenuToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete User"
-        description="Are you sure you want to delete this user? This action cannot be undone."
+        title="Delete Menu"
+        description="Are you sure you want to delete this menu? This action cannot be undone and will affect navigation permissions."
         confirmText="Delete"
         cancelText="Cancel"
       />

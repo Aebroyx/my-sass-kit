@@ -54,6 +54,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
     return () => {
       window.removeEventListener("resize", calculateModalPosition);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleAddFilter = () => {

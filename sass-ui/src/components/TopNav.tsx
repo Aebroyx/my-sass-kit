@@ -12,15 +12,13 @@ import 'react-loading-skeleton/dist/skeleton.css';
 import { useState } from 'react';
 import { ProfileModal } from './modals/ProfileModal';
 import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const userNavigation = [
   { name: 'Your profile', href: '#' },
   { name: 'Sign out', href: '#' },
 ];
 
-function classNames(...classes: string[]): string {
-  return classes.filter(Boolean).join(' ');
-}
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -30,6 +28,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
   const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const handleSignOut = async () => {
@@ -47,16 +46,20 @@ export function TopNav({ onMenuClick }: TopNavProps) {
         throw new Error('Failed to logout');
       }
 
+      // Clear all React Query cache to prevent showing old user's data
+      queryClient.clear();
+
       // After cookies are cleared, update Redux state
       dispatch(logout());
       // Toast success message
       toast.success('Logged out successfully');
-      
+
       // Redirect to login page
       router.push('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
       // Even if the API call fails, we should still clear the local state
+      queryClient.clear();
       dispatch(logout());
       router.push('/auth/login');
     }

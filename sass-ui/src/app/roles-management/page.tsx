@@ -3,17 +3,17 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { Navigation } from '@/components/Navigation';
 import { DataTable, FilterField } from '@/components/ui/DataTable';
 import DeleteModal from '@/components/modals/DeleteModal';
-import { useDeleteUser, useGetAllUsers } from '@/hooks/useUser';
-import { GetUserResponse } from '@/services/userService';
+import { useGetAllRoles, useDeleteRole } from '@/hooks/useRole';
+import { RoleResponse } from '@/services/roleService';
 import { useDebounce } from '@/hooks/useDebounce';
 
-export default function UsersManagementPage() {
+export default function RolesManagementPage() {
   const router = useRouter();
 
   // Table state
@@ -27,8 +27,8 @@ export default function UsersManagementPage() {
   // Debounce search
   const search = useDebounce(searchInput, 300);
 
-  // Fetch users data
-  const { data, isLoading, error } = useGetAllUsers({
+  // Fetch roles data
+  const { data, isLoading, error } = useGetAllRoles({
     page,
     pageSize,
     search,
@@ -37,40 +37,40 @@ export default function UsersManagementPage() {
     filters,
   });
 
-  // Delete user mutation
-  const deleteUser = useDeleteUser();
+  // Delete role mutation
+  const deleteRole = useDeleteRole();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [roleToDelete, setRoleToDelete] = useState<number | null>(null);
 
   // Handlers
   const openDeleteModal = (id: number) => {
-    setUserToDelete(id);
+    setRoleToDelete(id);
     setIsDeleteModalOpen(true);
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteUser.mutateAsync(id);
+      await deleteRole.mutateAsync(id);
       setIsDeleteModalOpen(false);
-      setUserToDelete(null);
+      setRoleToDelete(null);
     } catch (error) {
       console.error('Delete failed:', error);
     }
   };
 
   const handleConfirmDelete = () => {
-    if (!userToDelete) return;
-    handleDelete(userToDelete);
+    if (!roleToDelete) return;
+    handleDelete(roleToDelete);
   };
 
   const handleSearch = (value: string) => {
     setSearchInput(value);
-    setPage(1); // Reset to first page on search
+    setPage(1);
   };
 
   const handleFilterChange = (newFilters: Record<string, string>) => {
     setFilters(newFilters);
-    setPage(1); // Reset to first page when filters change
+    setPage(1);
   };
 
   const handleSortChange = (newSortBy: string, newSortDesc: boolean) => {
@@ -78,34 +78,61 @@ export default function UsersManagementPage() {
     setSortDesc(newSortDesc);
   };
 
-  // Define table columns using TanStack Table format
-  const columns = useMemo<ColumnDef<GetUserResponse>[]>(
+  // Define table columns
+  const columns = useMemo<ColumnDef<RoleResponse>[]>(
     () => [
       {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: 'display_name',
+        header: 'Role Name',
         cell: ({ row }) => (
-          <span className="font-medium text-gray-900 dark:text-gray-100">
-            {row.original.name}
+          <div>
+            <span className="font-medium text-gray-900 dark:text-gray-100">
+              {row.original.display_name}
+            </span>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {row.original.name}
+            </p>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'description',
+        header: 'Description',
+        cell: ({ row }) => (
+          <span className="text-gray-500 dark:text-gray-400 line-clamp-2">
+            {row.original.description || '-'}
           </span>
         ),
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: 'is_default',
+        header: 'Default',
         cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.email}
-          </span>
+          row.original.is_default ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+              <CheckCircleIcon className="h-3.5 w-3.5" />
+              Default
+            </span>
+          ) : (
+            <span className="text-gray-400 dark:text-gray-500">-</span>
+          )
         ),
       },
       {
-        accessorKey: 'role',
-        header: 'Role',
+        accessorKey: 'is_active',
+        header: 'Status',
         cell: ({ row }) => (
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium capitalize text-primary dark:bg-primary/20">
-            {row.original.role?.display_name || row.original.role?.name || 'N/A'}
-          </span>
+          row.original.is_active ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              <CheckCircleIcon className="h-3.5 w-3.5" />
+              Active
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              <XCircleIcon className="h-3.5 w-3.5" />
+              Inactive
+            </span>
+          )
         ),
       },
       {
@@ -114,18 +141,7 @@ export default function UsersManagementPage() {
         cell: ({ row }) => (
           <span className="text-gray-500 dark:text-gray-400">
             {row.original.created_at
-              ? format(new Date(row.original.created_at), 'yyyy-MM-dd HH:mm')
-              : '-'}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'updated_at',
-        header: 'Updated At',
-        cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.updated_at
-              ? format(new Date(row.original.updated_at), 'yyyy-MM-dd HH:mm')
+              ? format(new Date(row.original.created_at), 'MMM dd, yyyy')
               : '-'}
           </span>
         ),
@@ -136,16 +152,17 @@ export default function UsersManagementPage() {
         cell: ({ row }) => (
           <div className="flex justify-end gap-2">
             <button
-              onClick={() => router.push(`/users-management/${row.original.id}`)}
+              onClick={() => router.push(`/roles-management/${row.original.id}`)}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-              title="View user"
+              title="Edit role"
             >
               <EyeIcon className="h-5 w-5" />
             </button>
             <button
               onClick={() => openDeleteModal(row.original.id)}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title="Delete user"
+              disabled={row.original.is_default}
+              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+              title={row.original.is_default ? 'Cannot delete default role' : 'Delete role'}
             >
               <TrashIcon className="h-5 w-5" />
             </button>
@@ -159,27 +176,17 @@ export default function UsersManagementPage() {
   // Define filter fields
   const filterFields: FilterField[] = [
     {
-      key: 'role',
-      label: 'Role',
+      key: 'is_active',
+      label: 'Status',
       type: 'select',
       options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'user', label: 'User' },
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
       ],
     },
     {
       key: 'name',
-      label: 'Name',
-      type: 'text',
-    },
-    {
-      key: 'email',
-      label: 'Email',
-      type: 'text',
-    },
-    {
-      key: 'username',
-      label: 'Username',
+      label: 'Role Name',
       type: 'text',
     },
   ];
@@ -191,7 +198,7 @@ export default function UsersManagementPage() {
     return (
       <Navigation>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch users'}
+          Error: {error instanceof Error ? error.message : 'Failed to fetch roles'}
         </div>
       </Navigation>
     );
@@ -199,12 +206,12 @@ export default function UsersManagementPage() {
 
   return (
     <Navigation>
-      <DataTable<GetUserResponse>
+      <DataTable<RoleResponse>
         columns={columns}
         data={data?.data || []}
         isLoading={isLoading}
-        title="Users Management"
-        description="A list of all users in your application including their name, email, and role."
+        title="Roles Management"
+        description="Manage user roles and permissions in your application."
         // Pagination
         page={page}
         pageSize={pageSize}
@@ -216,7 +223,7 @@ export default function UsersManagementPage() {
           setPage(1);
         }}
         // Search
-        searchPlaceholder="Search users..."
+        searchPlaceholder="Search roles..."
         onSearch={handleSearch}
         // Sorting
         sortBy={sortBy}
@@ -227,19 +234,19 @@ export default function UsersManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        onAdd={() => router.push('/users-management/add')}
-        addButtonText="Add User"
+        onAdd={() => router.push('/roles-management/add')}
+        addButtonText="Add Role"
         // Empty state
         emptyState={
           <div className="py-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              No users found
+              No roles found
             </p>
             <button
-              onClick={() => router.push('/users-management/add')}
+              onClick={() => router.push('/roles-management/add')}
               className="mt-2 text-sm font-medium text-primary hover:text-primary-dark"
             >
-              Add your first user
+              Create your first role
             </button>
           </div>
         }
@@ -249,11 +256,11 @@ export default function UsersManagementPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          setUserToDelete(null);
+          setRoleToDelete(null);
         }}
         onConfirm={handleConfirmDelete}
-        title="Delete User"
-        description="Are you sure you want to delete this user? This action cannot be undone."
+        title="Delete Role"
+        description="Are you sure you want to delete this role? Users with this role will need to be reassigned."
         confirmText="Delete"
         cancelText="Cancel"
       />

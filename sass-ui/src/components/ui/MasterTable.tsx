@@ -1,7 +1,6 @@
 'use client';
 
 import { ReactNode, useState, useRef } from 'react';
-import { useDebounce } from '@/hooks/useDebounce';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
@@ -46,7 +45,7 @@ type MasterTableProps<T> = {
   onSearch: (search: string) => void;
   // Filter props
   filterFields?: FilterField[];
-  onFilterChange: (filters: Record<string, any>) => void;
+  onFilterChange: (filters: Record<string, string>) => void;
   // Sort props
   sortBy: string;
   sortDesc: boolean;
@@ -81,10 +80,9 @@ export default function MasterTable<T>({
   onSortChange,
 }: MasterTableProps<T>) {
   const [searchInput, setSearchInput] = useState('');
-  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
-  const debouncedSearch = useDebounce(searchInput, 300);
 
   // Handle search input change
   const handleSearchChange = (value: string) => {

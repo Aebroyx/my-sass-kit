@@ -126,13 +126,3 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	common.SendSuccess(c, http.StatusOK, "User deleted successfully", user)
 }
-
-func (h *UserHandler) SoftDeleteUser(c *gin.Context) {
-	user, err := h.userService.SoftDeleteUser(c.Param("id"))
-	if err != nil {
-		common.SendError(c, http.StatusInternalServerError, "Internal server error", common.CodeInternalError, nil)
-		return
-	}
-
-	common.SendSuccess(c, http.StatusOK, "User soft deleted successfully", user)
-}

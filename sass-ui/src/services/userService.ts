@@ -34,12 +34,23 @@ interface LoginResponse {
   user: RegisterResponse;
 }
 
+interface RoleResponse {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+  is_default: boolean;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface GetUserResponse {
   id: number;
   username: string;
   email: string;
   name: string;
-  role: string;
+  role: RoleResponse;
   created_at: string;
   updated_at: string;
 }
@@ -47,20 +58,22 @@ interface GetUserResponse {
 interface CreateUserRequest {
   name: string;
   email: string;
-  role: string;
+  username: string;
+  password: string;
+  role_id: number;
 }
 
 interface ErrorResponse {
   status: 'error';
   message: string;
   code?: string;
-  details?: any;
+  details?: unknown;
 }
 
 interface UpdateUserRequest {
   name: string;
   email: string;
-  role: string;
+  role_id: number;
   username: string;
   password: string;
 }
@@ -87,7 +100,7 @@ export interface GetAllUsersParams {
   search?: string;
   sortBy?: string;
   sortDesc?: boolean;
-  filters?: Record<string, any>;
+  filters?: Record<string, string>;
 }
 
 class UserService {

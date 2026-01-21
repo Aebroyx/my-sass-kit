@@ -1,223 +1,340 @@
 'use client';
 
-import { Navigation } from "@/components/Navigation";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import { ArrowLeftIcon, PencilIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { Navigation } from '@/components/Navigation';
+import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
+import { useGetUserById, useUpdateUser } from '@/hooks/useUser';
+import { useGetActiveRoles } from '@/hooks/useRole';
+import {
+  useGetMenuTree,
+  useGetRoleMenus,
+  useGetUserRightsAccess,
+  useBulkSaveUserRightsAccess,
+} from '@/hooks/useMenu';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
-import { useGetUserById, useUpdateUser } from "@/hooks/useUser";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 
-const roleOptions = [
-  { value: 'user', label: 'User' },
-  { value: 'admin', label: 'Admin' },
-];
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  username: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export default function UserDetailsPage({ params }: { params: { id: string } }) {
+export default function EditUserPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const { data: user, isLoading, error } = useGetUserById(params.id);
+  const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
+  const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
+  const updateUser = useUpdateUser();
+  const bulkSaveRightsAccess = useBulkSaveUserRightsAccess();
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: '',
     username: '',
     password: '',
+    role: '',
   });
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const updateUser = useUpdateUser();
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // fetch user by id
-  const { data: user, isLoading, error } = useGetUserById(params.id);
+  // Use ref to store permissions to avoid unnecessary re-renders
+  const permissionsRef = useRef<MenuPermission[]>([]);
 
-  // Initialize form data when user data is loaded
+  // Get the selected role's ID for fetching role menus
+  const selectedRole = roles?.find((r) => r.name === formData.role);
+  const { data: roleMenus, isLoading: roleMenusLoading } = useGetRoleMenus(selectedRole?.id);
+
+  // Get user's existing rights access
+  const userId = user?.id ? Number(user.id) : undefined;
+  const { data: userRightsAccess, isLoading: rightsLoading } = useGetUserRightsAccess(userId);
+
+  // Convert roles to select options
+  const roleOptions =
+    roles?.map((role) => ({
+      value: role.name,
+      label: role.display_name,
+    })) || [];
+
+  // Populate form when user data loads
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
         email: user.email,
-        role: user.role,
         username: user.username,
         password: '',
+        role: user.role?.name || '',
       });
     }
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFieldErrors({});
-    
-    try {
-      await updateUser.mutateAsync({
-        id: params.id,
-        ...formData,
-      });
-    } catch (error) {
-      console.error('Update failed:', error);
-    }
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    if (fieldErrors[name]) {
-      setFieldErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleRoleChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      role: value
-    }));
-    if (fieldErrors.role) {
-      setFieldErrors(prev => ({
-        ...prev,
-        role: ''
-      }));
+    setFormData((prev) => ({ ...prev, role: value }));
+    if (errors.role) {
+      setErrors((prev) => ({ ...prev, role: '' }));
     }
   };
 
-  if (isLoading) {
+  const handlePermissionsChange = useCallback((newPermissions: MenuPermission[]) => {
+    permissionsRef.current = newPermissions;
+  }, []);
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
+    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (formData.password && formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    if (!formData.role) newErrors.role = 'Role is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      // Update user info
+      await updateUser.mutateAsync({
+        id: params.id,
+        name: formData.name,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        role_id: selectedRole?.id || 0,
+      });
+
+      // Save ONLY custom permission overrides (not inherited ones)
+      // Filter to only include permissions with at least one custom override
+      const customPermissions = permissionsRef.current.filter((p) => p.isCustomized);
+
+      if (userId && customPermissions.length > 0) {
+        const permissionsToSave = customPermissions.map((p) => ({
+          menu_id: p.menuId,
+          can_read: p.canRead,       // nullable: null = inherit, true/false = override
+          can_write: p.canWrite,     // nullable: null = inherit, true/false = override
+          can_update: p.canUpdate,   // nullable: null = inherit, true/false = override
+          can_delete: p.canDelete,   // nullable: null = inherit, true/false = override
+        }));
+
+        await bulkSaveRightsAccess.mutateAsync({
+          userId,
+          permissions: permissionsToSave,
+        });
+      } else if (userId && customPermissions.length === 0) {
+        // If no custom permissions, delete all overrides (user will inherit from role)
+        await bulkSaveRightsAccess.mutateAsync({
+          userId,
+          permissions: [],
+        });
+      }
+
+      toast.success('User updated successfully');
+      router.push('/users-management');
+    } catch (error) {
+      console.error('Update failed:', error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Just navigate back without saving
+    router.push('/users-management');
+  };
+
+  if (error) {
     return (
       <Navigation>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+          Error: {error instanceof Error ? error.message : 'Failed to fetch user'}
         </div>
       </Navigation>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  // Check if user has permission to edit
+  // 1. Role-based check: root or admin roles have full access
+  const isRootOrAdmin = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
+
+  // 2. Permission-based check: user has explicit UPDATE permission on users-management menu
+  // Note: This checks the current user's permissions, not the user being edited
+  // For now, we'll just use role-based check until we fetch current user's permissions
+  const canEdit = isRootOrAdmin;
+
+  const isDataLoading = isLoading || menusLoading || rolesLoading;
+  const isPermissionsLoading = roleMenusLoading || rightsLoading;
 
   return (
     <Navigation>
-      <div className="mb-6 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => router.push('/users-management')}
-          className="inline-flex items-center gap-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+      <form onSubmit={handleSubmit}>
+        <FormCard
+          title={isLoading ? 'Loading...' : `Edit User: ${user?.name}`}
+          description="Update user information, credentials, and permissions."
+          actions={
+            canEdit ? (
+              <FormActions>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting || isLoading}
+                  className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </FormActions>
+            ) : undefined
+          }
         >
-          <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
-          Back to Users List
-        </button>
-
-      </div>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-12">
-            <div className="border-b border-gray-900/10 pb-12">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Edit User</h1>
-              <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                <div className="sm:col-span-4">
+          {isDataLoading ? (
+            <div className="space-y-8">
+              <div className="space-y-6">
+                <Skeleton height={20} width={150} />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <Skeleton height={70} />
+                  <Skeleton height={70} />
+                </div>
+              </div>
+              <div className="space-y-6">
+                <Skeleton height={20} width={150} />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <Skeleton height={70} />
+                  <Skeleton height={70} />
+                </div>
+                <Skeleton height={70} />
+              </div>
+              <div className="space-y-6">
+                <Skeleton height={20} width={150} />
+                <Skeleton height={200} />
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <FormSection
+                title="Personal Information"
+                description="Basic information about the user."
+              >
+                <FormRow columns={2}>
                   <Input
-                    label="Name"
                     id="name"
                     name="name"
-                    type="text"
-                    required
+                    label="Full Name"
+                    placeholder="John Doe"
                     value={formData.name}
                     onChange={handleChange}
-                    error={fieldErrors.name}
-                    autoComplete="name"
+                    error={errors.name}
+                    disabled={!canEdit}
+                    required
                   />
-                </div>
-
-                <div className="sm:col-span-4">
                   <Input
-                    label="Email address"
                     id="email"
                     name="email"
                     type="email"
-                    required
+                    label="Email Address"
+                    placeholder="john@example.com"
                     value={formData.email}
                     onChange={handleChange}
-                    error={fieldErrors.email}
-                    autoComplete="email"
+                    error={errors.email}
+                    disabled={!canEdit}
+                    required
                   />
-                </div>
+                </FormRow>
+              </FormSection>
 
-                <div className="sm:col-span-4">
+              <FormSection
+                title="Account Details"
+                description="Login credentials and role assignment."
+              >
+                <FormRow columns={2}>
                   <Input
-                    label="Username"
                     id="username"
                     name="username"
-                    type="text"
-                    required
+                    label="Username"
+                    placeholder="johndoe"
                     value={formData.username}
                     onChange={handleChange}
-                    error={fieldErrors.username}
-                    helperText="Username must be unique"
+                    error={errors.username}
+                    helperText="Must be unique. Used for login."
+                    disabled={!canEdit}
+                    required
                   />
-                </div>
-
-                <div className="sm:col-span-4">
                   <Input
-                    label="Password"
                     id="password"
                     name="password"
                     type="password"
+                    label="New Password"
+                    placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
-                    error={fieldErrors.password}
-                    helperText="Leave blank to keep current password"
+                    error={errors.password}
+                    helperText="Leave blank to keep current password."
+                    disabled={!canEdit}
                   />
-                </div>
+                </FormRow>
 
-                <div className="sm:col-span-3">
+                <FormRow>
                   <Select
                     label="Role"
                     name="role"
                     options={roleOptions}
                     value={formData.role}
                     onChange={handleRoleChange}
-                    error={fieldErrors.role}
+                    error={errors.role}
+                    disabled={!canEdit || rolesLoading}
+                    placeholder="Select a role"
                     required
                   />
+                </FormRow>
+              </FormSection>
+
+              {/* Menu Permissions Section */}
+              {formData.role && canEdit && (
+                <FormSection
+                  title="Menu Permissions"
+                  description="Customize menu access for this user. By default, permissions are inherited from the selected role. Click on any permission to customize it."
+                >
+                  <MenuPermissionsEditor
+                    roleMenus={roleMenus || []}
+                    allMenus={menuTree || []}
+                    userRightsAccess={userRightsAccess || []}
+                    isLoading={isPermissionsLoading}
+                    onChange={handlePermissionsChange}
+                    disabled={isSubmitting || !canEdit}
+                  />
+                </FormSection>
+              )}
+
+              {!canEdit && (
+                <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+                  You don&apos;t have permission to edit this user.
                 </div>
-              </div>
+              )}
             </div>
-          </div>
-          {
-            (currentUser?.role === 'root' || currentUser?.role === 'admin') && (
-                <div className="mt-6 flex items-center justify-end gap-x-4">
-                    <button
-                        type="button"
-                        onClick={() => router.push('/users-management')}
-                        className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-600"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                    type="submit"
-                    disabled={updateUser.isPending}
-                    className="inline-flex items-center gap-x-2 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary dark:hover:bg-primary-dark"
-                    >
-                    {updateUser.isPending ? 'Saving...' : 'Save Changes'}
-                    </button>
-                </div>
-            )
-          }
-        </form>
+          )}
+        </FormCard>
+      </form>
     </Navigation>
   );
-} 
+}

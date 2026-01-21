@@ -349,16 +349,28 @@ func (s *UserService) UpdateUser(id string, req *models.UpdateUserRequest) (*mod
 
 func (s *UserService) DeleteUser(id string) (*models.Users, error) {
 	var user models.Users
-	if err := s.db.Where("id = ?", id).Delete(&user).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		// First, get the user to verify it exists
+		if err := tx.Where("id = ?", id).First(&user).Error; err != nil {
+			return err
+		}
 
-func (s *UserService) SoftDeleteUser(id string) (*models.Users, error) {
-	var user models.Users
-	if err := s.db.Model(&user).Where("id = ?", id).Update("is_deleted", true).Error; err != nil {
+		// Mark as deleted (in addition to Gorm's soft delete)
+		if err := tx.Model(&models.Users{}).Where("id = ?", id).Updates(map[string]interface{}{
+			"is_deleted": true,
+		}).Error; err != nil {
+			return err
+		}
+
+		// Soft delete the user (sets deleted_at)
+		if err := tx.Where("id = ?", id).Delete(&user).Error; err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
+
 	return &user, nil
 }
