@@ -120,6 +120,11 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	user, err := h.userService.DeleteUser(c.Param("id"))
 	if err != nil {
+		// Check for specific error messages
+		if err.Error() == "cannot delete root user" {
+			common.SendError(c, http.StatusForbidden, "cannot delete root user", common.CodeForbidden, nil)
+			return
+		}
 		common.SendError(c, http.StatusInternalServerError, "Internal server error", common.CodeInternalError, nil)
 		return
 	}

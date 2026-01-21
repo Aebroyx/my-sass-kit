@@ -13,6 +13,17 @@ import { useGetAllRoles, useDeleteRole } from '@/hooks/useRole';
 import { RoleResponse } from '@/services/roleService';
 import { useDebounce } from '@/hooks/useDebounce';
 
+// Helper function to check if role can be deleted
+const canDeleteRole = (role: RoleResponse): boolean => {
+  // Prevent deletion of protected roles
+  const protectedRoles = ['root', 'admin', 'user'];
+  if (role.name && protectedRoles.includes(role.name.toLowerCase())) {
+    return false;
+  }
+  
+  return true;
+};
+
 export default function RolesManagementPage() {
   const router = useRouter();
 
@@ -149,25 +160,43 @@ export default function RolesManagementPage() {
       {
         id: 'actions',
         header: '',
-        cell: ({ row }) => (
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => router.push(`/roles-management/${row.original.id}`)}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-              title="Edit role"
-            >
-              <EyeIcon className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => openDeleteModal(row.original.id)}
-              disabled={row.original.is_default}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title={row.original.is_default ? 'Cannot delete default role' : 'Delete role'}
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canDeleteRole(row.original);
+          const tooltipText = !canDelete 
+            ? 'Cannot delete protected role' 
+            : row.original.is_default 
+              ? 'Cannot delete default role' 
+              : 'Delete role';
+          
+          return (
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => router.push(`/roles-management/${row.original.id}`)}
+                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
+                title="Edit role"
+              >
+                <EyeIcon className="h-5 w-5" />
+              </button>
+              {canDelete && !row.original.is_default ? (
+                <button
+                  onClick={() => openDeleteModal(row.original.id)}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  title={tooltipText}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="rounded-lg p-2 text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                  title={tooltipText}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          );
+        },
       },
     ],
     [router]

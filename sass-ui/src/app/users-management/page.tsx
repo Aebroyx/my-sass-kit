@@ -13,6 +13,16 @@ import { useDeleteUser, useGetAllUsers } from '@/hooks/useUser';
 import { GetUserResponse } from '@/services/userService';
 import { useDebounce } from '@/hooks/useDebounce';
 
+// Helper function to check if user can be deleted
+const canDeleteUser = (user: GetUserResponse): boolean => {
+  // Prevent deletion of root user only
+  if (user.username === 'root' || user.email === 'root@localhost') {
+    return false;
+  }
+  
+  return true;
+};
+
 export default function UsersManagementPage() {
   const router = useRouter();
 
@@ -133,24 +143,37 @@ export default function UsersManagementPage() {
       {
         id: 'actions',
         header: '',
-        cell: ({ row }) => (
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={() => router.push(`/users-management/${row.original.id}`)}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-              title="View user"
-            >
-              <EyeIcon className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => openDeleteModal(row.original.id)}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title="Delete user"
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canDeleteUser(row.original);
+          return (
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => router.push(`/users-management/${row.original.id}`)}
+                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
+                title="View user"
+              >
+                <EyeIcon className="h-5 w-5" />
+              </button>
+              {canDelete ? (
+                <button
+                  onClick={() => openDeleteModal(row.original.id)}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  title="Delete user"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="rounded-lg p-2 text-gray-300 dark:text-gray-600 cursor-not-allowed"
+                  title="This user cannot be deleted"
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          );
+        },
       },
     ],
     [router]

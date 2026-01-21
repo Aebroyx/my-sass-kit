@@ -355,6 +355,11 @@ func (s *UserService) DeleteUser(id string) (*models.Users, error) {
 			return err
 		}
 
+		// Prevent deletion of root user only
+		if user.Username == "root" || user.Email == "root@localhost" {
+			return errors.New("cannot delete root user")
+		}
+
 		// Mark as deleted (in addition to Gorm's soft delete)
 		if err := tx.Model(&models.Users{}).Where("id = ?", id).Updates(map[string]interface{}{
 			"is_deleted": true,
