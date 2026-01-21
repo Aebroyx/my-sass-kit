@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { Dialog, Transition, DialogTitle } from "@headlessui/react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { PrimaryButton } from "@/components/ui/buttons";
 
 type ProfileModalType = {
   open: boolean;
@@ -70,13 +71,13 @@ export const ProfileModal = ({
                     </div>
                     </div>
                     <div className="mt-5 sm:mt-6">
-                    <button
+                      <PrimaryButton
                         type="button"
                         onClick={() => setOpen(false)}
-                        className="inline-flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    >
+                        fullWidth
+                      >
                         Close
-                    </button>
+                      </PrimaryButton>
                     </div>
               </Dialog.Panel>
             </Transition.Child>

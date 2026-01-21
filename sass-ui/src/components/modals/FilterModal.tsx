@@ -1,4 +1,5 @@
 import { FunnelIcon } from "@heroicons/react/24/outline";
+import { PrimaryButton, SecondaryButton } from "@/components/ui/buttons";
 import React, { useState, useRef, useEffect } from "react";
 
 interface FilterItem {
@@ -170,13 +171,13 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
             />
           )}
 
-          <button
+          <PrimaryButton
             onClick={handleAddFilter}
-            className="bg-primary text-white px-3 py-1 rounded hover:bg-primary-dark flex items-center gap-1 w-full sm:w-auto justify-center"
+            className="w-full sm:w-auto"
           >
             <span>+</span>
             <span>Add</span>
-          </button>
+          </PrimaryButton>
         </div>
 
         <ul className="my-6 space-y-2 h-36 overflow-y-auto">
@@ -207,12 +208,12 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
 
         {filters.length > 0 && (
           <div className="text-center">
-            <button 
-              onClick={handleReset} 
-              className="text-red-500 border border-red-500 px-4 py-1 rounded hover:bg-red-100 dark:hover:bg-red-900/20"
+            <SecondaryButton
+              onClick={handleReset}
+              variant="danger"
             >
               ✕ Clear All
-            </button>
+            </SecondaryButton>
           </div>
         )}
       </div>

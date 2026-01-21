@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '@/store/features/authSlice';
 import { userService } from '@/services/userService';
+import { PrimaryButton } from '@/components/ui/buttons';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,10 +40,10 @@ export default function LoginPage() {
 
     try {
       const response = await userService.login(formData);
-      
+
       // Update Redux state with user data only (tokens are in cookies)
       dispatch(setCredentials({
-        user: response.user
+        user: response.user as any
       }));
       
       // Show success message
@@ -127,13 +128,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <button
+              <PrimaryButton
                 type="submit"
+                loading={isLoading}
                 disabled={isLoading}
-                className="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                fullWidth
               >
                 {isLoading ? 'Signing in...' : 'Sign in'}
-              </button>
+              </PrimaryButton>
             </div>
           </form>
 

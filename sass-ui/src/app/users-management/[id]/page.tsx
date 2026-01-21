@@ -7,6 +7,7 @@ import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/For
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useGetUserById, useUpdateUser } from '@/hooks/useUser';
 import { useGetActiveRoles } from '@/hooks/useRole';
 import {
@@ -189,21 +190,20 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           actions={
             canEdit ? (
               <FormActions>
-                <button
+                <SecondaryButton
                   type="button"
                   onClick={handleCancel}
                   disabled={isSubmitting}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                 >
                   Cancel
-                </button>
-                <button
+                </SecondaryButton>
+                <PrimaryButton
                   type="submit"
+                  loading={isSubmitting}
                   disabled={isSubmitting || isLoading}
-                  className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </button>
+                </PrimaryButton>
               </FormActions>
             ) : undefined
           }

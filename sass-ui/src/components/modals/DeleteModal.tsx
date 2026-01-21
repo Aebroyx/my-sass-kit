@@ -3,6 +3,7 @@
 import { Fragment } from 'react'
 import { Dialog, Transition, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons'
 
 interface DeleteModalProps {
   isOpen: boolean;
@@ -65,21 +66,22 @@ export default function DeleteModal({
                     </div>
                   </div>
                 </div>
-                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <button
+                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
+                  <PrimaryButton
                     type="button"
                     onClick={onConfirm}
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto"
+                    variant="danger"
+                    className="w-full sm:w-auto"
                   >
                     {confirmText}
-                  </button>
-                  <button
+                  </PrimaryButton>
+                  <SecondaryButton
                     type="button"
                     onClick={onClose}
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
+                    className="w-full sm:w-auto"
                   >
                     {cancelText}
-                  </button>
+                  </SecondaryButton>
                 </div>
               </Dialog.Panel>
             </Transition.Child>

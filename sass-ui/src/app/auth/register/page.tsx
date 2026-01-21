@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { userService } from '@/services/userService';
+import { PrimaryButton } from '@/components/ui/buttons';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
@@ -187,13 +188,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <button
+            <PrimaryButton
               type="submit"
+              loading={isLoading}
               disabled={isLoading}
-              className="flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              fullWidth
             >
               {isLoading ? 'Creating account...' : 'Create Account'}
-            </button>
+            </PrimaryButton>
           </div>
         </form>
 

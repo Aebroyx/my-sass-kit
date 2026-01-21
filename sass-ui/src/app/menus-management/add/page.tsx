@@ -6,6 +6,7 @@ import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useCreateMenu, useGetMenuTree } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
 import toast from 'react-hot-toast';
@@ -119,21 +120,20 @@ export default function AddMenuPage() {
           description="Add a new menu item to your application's navigation system."
           actions={
             <FormActions>
-              <button
+              <SecondaryButton
                 type="button"
                 onClick={handleCancel}
                 disabled={isSubmitting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
               >
                 Cancel
-              </button>
-              <button
+              </SecondaryButton>
+              <PrimaryButton
                 type="submit"
+                loading={isSubmitting}
                 disabled={isSubmitting}
-                className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Creating...' : 'Create Menu'}
-              </button>
+              </PrimaryButton>
             </FormActions>
           }
         >

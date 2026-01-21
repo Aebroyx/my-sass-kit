@@ -3,6 +3,7 @@
 import { useState, Fragment } from 'react';
 import { FunnelIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { DataTableFiltersProps } from './types';
 
 export function DataTableFilters({
@@ -89,7 +90,7 @@ export function DataTableFilters({
       <Popover className="relative">
         {({ close }) => (
           <>
-            <PopoverButton className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+            <PopoverButton as={SecondaryButton} className="inline-flex items-center gap-2">
               <FunnelIcon className="h-4 w-4" />
               <span>Filter</span>
               {activeFiltersCount > 0 && (
@@ -177,18 +178,18 @@ export function DataTableFilters({
                   )}
 
                   {/* Add Button */}
-                  <button
+                  <PrimaryButton
                     type="button"
                     onClick={() => {
                       handleAddFilter();
                       close();
                     }}
                     disabled={!selectedField || !filterValue}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    fullWidth
                   >
                     <PlusIcon className="h-4 w-4" />
                     Add Filter
-                  </button>
+                  </PrimaryButton>
                 </div>
               </PopoverPanel>
             </Transition>

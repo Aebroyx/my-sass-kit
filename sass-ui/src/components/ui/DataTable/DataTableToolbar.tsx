@@ -1,6 +1,7 @@
 'use client';
 
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { PrimaryButton } from '@/components/ui/buttons';
 import { DataTableSearch } from './DataTableSearch';
 import { DataTableFilters } from './DataTableFilters';
 import { DataTableToolbarProps } from './types';
@@ -56,14 +57,13 @@ export function DataTableToolbar({
 
         {/* Right side - Add Button */}
         {onAdd && (
-          <button
+          <PrimaryButton
             type="button"
             onClick={onAdd}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
           >
             <PlusIcon className="h-5 w-5" />
             {addButtonText}
-          </button>
+          </PrimaryButton>
         )}
       </div>
     </div>

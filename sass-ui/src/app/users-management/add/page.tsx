@@ -7,6 +7,7 @@ import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/For
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useCreateUser } from '@/hooks/useUser';
 import { useGetActiveRoles } from '@/hooks/useRole';
 import { useGetMenuTree, useGetRoleMenus, useBulkSaveUserRightsAccess } from '@/hooks/useMenu';
@@ -102,8 +103,8 @@ export default function AddUserPage() {
         role_id: role.id,
       });
 
-      // Extract user ID from response (API returns {status, message, data: {id, ...}})
-      const userId = newUser?.data?.id || newUser?.id;
+      // Extract user ID from response
+      const userId = newUser?.id;
 
       // Save ONLY custom permission overrides (not inherited ones)
       if (permissionsRef.current.length > 0 && userId) {
@@ -158,23 +159,22 @@ export default function AddUserPage() {
             description="Add a new user to your application with role-based permissions."
             actions={
               <FormActions>
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? 'Creating...' : 'Create User'}
-              </button>
-            </FormActions>
-          }
+                <SecondaryButton
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </SecondaryButton>
+                <PrimaryButton
+                  type="submit"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : 'Create User'}
+                </PrimaryButton>
+              </FormActions>
+            }
         >
           <div className="space-y-8">
             <FormSection

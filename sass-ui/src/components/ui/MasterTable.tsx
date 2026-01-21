@@ -4,6 +4,7 @@ import { ReactNode, useState, useRef } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import FilterModal from '@/components/modals/FilterModal';
 
 // Define the base column type
@@ -131,13 +132,12 @@ export default function MasterTable<T>({
         </div>
         {onAdd && (
           <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <button
+            <PrimaryButton
               type="button"
               onClick={onAdd}
-              className="block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               {addButtonText}
-            </button>
+            </PrimaryButton>
           </div>
         )}
       </div>
@@ -161,10 +161,10 @@ export default function MasterTable<T>({
         {/* Filter Button */}
         {filterFields.length > 0 && (
           <div ref={filterButtonRef} className="sm:w-auto">
-            <button
+            <SecondaryButton
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
-              className="mt-1 inline-flex h-[calc(2.5rem+2px)] items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+              className="mt-1"
             >
               <FunnelIcon className="h-5 w-5" />
               Filter
@@ -173,7 +173,7 @@ export default function MasterTable<T>({
                   {Object.keys(filters).length}
                 </span>
               )}
-            </button>
+            </SecondaryButton>
           </div>
         )}
       </div>

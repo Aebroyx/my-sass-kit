@@ -6,6 +6,7 @@ import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input, { Textarea, Toggle } from '@/components/ui/Input';
 import { RoleMenuPermissionsEditor, RoleMenuPermission } from '@/components/ui/RoleMenuPermissionsEditor';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useCreateRole, useBulkAssignMenusToRole } from '@/hooks/useRole';
 import { useGetMenuTree } from '@/hooks/useMenu';
 import { useSelector } from 'react-redux';
@@ -116,23 +117,22 @@ export default function AddRolePage() {
             description="Add a new role to manage user permissions in your application."
             actions={
               <FormActions>
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSubmitting ? 'Creating...' : 'Create Role'}
-              </button>
-            </FormActions>
-          }
+                <SecondaryButton
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </SecondaryButton>
+                <PrimaryButton
+                  type="submit"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : 'Create Role'}
+                </PrimaryButton>
+              </FormActions>
+            }
         >
           <div className="space-y-8">
             <FormSection
