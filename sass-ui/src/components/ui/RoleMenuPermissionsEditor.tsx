@@ -191,7 +191,7 @@ export function RoleMenuPermissionsEditor({
             type="button"
             onClick={selectAll}
             disabled={disabled}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-300 dark:hover:bg-hover-bg"
           >
             Select All
           </button>
@@ -199,17 +199,17 @@ export function RoleMenuPermissionsEditor({
             type="button"
             onClick={deselectAll}
             disabled={disabled}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-300 dark:hover:bg-hover-bg"
           >
             Deselect All
           </button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-border-dark dark:bg-card-bg">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
+            <thead className="bg-gray-50 dark:bg-transparent">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">
                   Menu
@@ -234,14 +234,14 @@ export function RoleMenuPermissionsEditor({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-card-bg">
               {permissions.map((perm) => (
                 <tr
                   key={perm.menuId}
                   className={`transition-colors ${
                     perm.isSelected
-                      ? 'bg-blue-50 dark:bg-blue-900/10'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      ? 'bg-blue-50 dark:bg-hover-bg'
+                      : 'hover:bg-gray-50/5 dark:hover:bg-hover-bg/50'
                   }`}
                 >
                   <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -258,7 +258,7 @@ export function RoleMenuPermissionsEditor({
                       className={`inline-flex h-6 w-6 items-center justify-center rounded transition-colors ${
                         perm.isSelected
                           ? 'bg-primary text-white hover:bg-primary-dark'
-                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-input-bg dark:text-gray-500 dark:hover:bg-hover-bg'
                       } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       title={perm.isSelected ? 'Deselect menu' : 'Select menu'}
                     >
@@ -277,7 +277,7 @@ export function RoleMenuPermissionsEditor({
                       className={`inline-flex h-6 w-6 items-center justify-center rounded transition-colors ${
                         perm.canRead
                           ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-input-bg dark:text-gray-500 dark:hover:bg-hover-bg'
                       } ${disabled || !perm.isSelected ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       title={perm.canRead ? 'Revoke read permission' : 'Grant read permission'}
                     >
@@ -292,7 +292,7 @@ export function RoleMenuPermissionsEditor({
                       className={`inline-flex h-6 w-6 items-center justify-center rounded transition-colors ${
                         perm.canWrite
                           ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-input-bg dark:text-gray-500 dark:hover:bg-hover-bg'
                       } ${disabled || !perm.isSelected ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       title={perm.canWrite ? 'Revoke write permission' : 'Grant write permission'}
                     >
@@ -307,7 +307,7 @@ export function RoleMenuPermissionsEditor({
                       className={`inline-flex h-6 w-6 items-center justify-center rounded transition-colors ${
                         perm.canUpdate
                           ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-input-bg dark:text-gray-500 dark:hover:bg-hover-bg'
                       } ${disabled || !perm.isSelected ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       title={perm.canUpdate ? 'Revoke update permission' : 'Grant update permission'}
                     >
@@ -322,7 +322,7 @@ export function RoleMenuPermissionsEditor({
                       className={`inline-flex h-6 w-6 items-center justify-center rounded transition-colors ${
                         perm.canDelete
                           ? 'bg-green-600 text-white hover:bg-green-700'
-                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600'
+                          : 'bg-gray-200 text-gray-400 hover:bg-gray-300 dark:bg-input-bg dark:text-gray-500 dark:hover:bg-hover-bg'
                       } ${disabled || !perm.isSelected ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                       title={perm.canDelete ? 'Revoke delete permission' : 'Grant delete permission'}
                     >
@@ -337,7 +337,7 @@ export function RoleMenuPermissionsEditor({
       </div>
 
       {permissions.length === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-border-dark dark:bg-card-bg">
           <p className="text-sm text-gray-500 dark:text-gray-400">No menus available</p>
         </div>
       )}

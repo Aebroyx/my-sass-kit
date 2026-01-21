@@ -45,14 +45,14 @@ export function FormCard({
       </div>
 
       {/* Form Card */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-border-dark dark:bg-card-bg">
         <div className="p-6 sm:p-8">
           {children}
         </div>
 
         {/* Actions Footer */}
         {actions && (
-          <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-800/50 sm:px-8">
+          <div className="border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-border-dark dark:bg-input-bg sm:px-8">
             {actions}
           </div>
         )}
@@ -71,7 +71,7 @@ export function FormSection({ title, description, children }: FormSectionProps) 
   return (
     <div className="space-y-6">
       {(title || description) && (
-        <div className="border-b border-gray-200 pb-4 dark:border-gray-700">
+        <div className="border-b border-gray-200 pb-4 dark:border-border-dark">
           {title && (
             <h3 className="text-base font-semibold text-gray-900 dark:text-white">
               {title}

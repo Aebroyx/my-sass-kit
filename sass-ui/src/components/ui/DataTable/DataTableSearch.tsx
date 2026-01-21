@@ -34,7 +34,7 @@ export function DataTableSearch({
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         placeholder={placeholder}
-        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-primary dark:focus:ring-primary"
+        className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-900 placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white dark:placeholder:text-gray-500 dark:focus:border-primary dark:focus:ring-primary"
       />
       {value && (
         <button

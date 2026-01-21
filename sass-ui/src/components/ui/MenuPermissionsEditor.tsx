@@ -267,7 +267,7 @@ export function MenuPermissionsEditor({
 
   if (permissions.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800/50">
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-border-dark dark:bg-card-bg/50">
         <p className="text-sm text-gray-500 dark:text-gray-400">
           No menus available. Please assign menus to the selected role first.
         </p>
@@ -303,10 +303,10 @@ export function MenuPermissionsEditor({
       </div>
 
       {/* Permissions table */}
-      <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-border-dark">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
+            <thead className="bg-gray-50 dark:bg-transparent">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
                   Menu
@@ -324,13 +324,13 @@ export function MenuPermissionsEditor({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-900">
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-border-dark dark:bg-input-bg">
               {permissions.map((perm) => {
                 const customized = isCustomized(perm);
                 return (
                   <tr
                     key={perm.menuId}
-                    className={customized ? 'bg-amber-50 dark:bg-amber-900/10' : ''}
+                    className={customized ? 'bg-amber-50 dark:bg-hover-bg' : ''}
                   >
                     <td className="whitespace-nowrap px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -338,7 +338,7 @@ export function MenuPermissionsEditor({
                           {perm.menuName}
                         </span>
                         {customized && (
-                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-400">
                             Custom
                           </span>
                         )}
@@ -366,7 +366,7 @@ export function MenuPermissionsEditor({
                                     ? 'border-green-300 bg-green-50 text-green-600 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400'
                                     : 'border-green-500 bg-green-100 text-green-700 ring-2 ring-green-500/30 dark:border-green-500 dark:bg-green-900/40 dark:text-green-300'
                                   : inherited
-                                    ? 'border-gray-200 bg-gray-50 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500'
+                                    ? 'border-gray-200 bg-gray-50 text-gray-400 dark:border-border-dark dark:bg-card-bg dark:text-gray-500'
                                     : 'border-red-400 bg-red-50 text-red-500 ring-2 ring-red-500/30 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400'
                               }
                             `}
@@ -390,7 +390,7 @@ export function MenuPermissionsEditor({
                         <button
                           type="button"
                           onClick={() => resetToRoleDefaults(perm.menuId)}
-                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+                          className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-hover-bg dark:hover:text-gray-200"
                           title="Reset to role defaults"
                         >
                           <ArrowPathIcon className="h-3.5 w-3.5" />
@@ -407,7 +407,7 @@ export function MenuPermissionsEditor({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-600 dark:bg-gray-800/50 dark:text-gray-400">
+      <div className="flex flex-wrap gap-4 rounded-lg bg-gray-50 p-3 text-xs text-gray-600 dark:bg-input-bg dark:text-gray-400">
         <div className="font-medium">Legend:</div>
         <div className="flex items-center gap-2">
           <span className="inline-flex h-5 w-5 items-center justify-center rounded border-2 border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20">
@@ -422,7 +422,7 @@ export function MenuPermissionsEditor({
           <span>Allowed (custom)</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded border-2 border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+          <span className="inline-flex h-5 w-5 items-center justify-center rounded border-2 border-gray-200 bg-gray-50 dark:border-border-dark dark:bg-card-bg">
             <XMarkIcon className="h-3 w-3 text-gray-400 dark:text-gray-500" />
           </span>
           <span>Denied (inherited)</span>

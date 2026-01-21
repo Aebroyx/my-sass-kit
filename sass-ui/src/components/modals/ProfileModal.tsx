@@ -65,7 +65,7 @@ export const ProfileModal = ({
                         </div>
                         <div className="flex flex-col items-center">
                             <label htmlFor="role" className="text-sm text-gray-600 mb-1">Role</label>
-                            <h1 id="role" className="w-full text-lg font-bold capitalize">{user?.role}</h1>
+                            <h1 id="role" className="w-full text-lg font-bold capitalize">{user?.role?.display_name || user?.role?.name}</h1>
                         </div>
                         </div>
                     </div>

@@ -24,10 +24,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             placeholder:text-gray-400 dark:placeholder:text-gray-500
             focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary
             disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500
-            dark:disabled:bg-gray-800 dark:disabled:text-gray-400
+            dark:disabled:bg-input-bg/50 dark:disabled:text-gray-400
             ${error
               ? 'border-red-300 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-500 dark:border-red-600 dark:bg-red-900/10 dark:text-red-400'
-              : 'border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
+              : 'border-gray-300 bg-white text-gray-900 dark:border-border-dark dark:bg-input-bg dark:text-white'
             }
             ${className}
           `}
@@ -72,10 +72,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             placeholder:text-gray-400 dark:placeholder:text-gray-500
             focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary
             disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-500
-            dark:disabled:bg-gray-800 dark:disabled:text-gray-400
+            dark:disabled:bg-input-bg/50 dark:disabled:text-gray-400
             ${error
               ? 'border-red-300 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-500 dark:border-red-600 dark:bg-red-900/10 dark:text-red-400'
-              : 'border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white'
+              : 'border-gray-300 bg-white text-gray-900 dark:border-border-dark dark:bg-input-bg dark:text-white'
             }
             ${className}
           `}
@@ -117,7 +117,7 @@ export function Toggle({ label, description, checked, onChange, disabled }: Togg
           transition-colors duration-200 ease-in-out
           focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
           disabled:cursor-not-allowed disabled:opacity-50
-          ${checked ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}
+          ${checked ? 'bg-primary' : 'bg-gray-200 dark:bg-input-bg'}
         `}
       >
         <span

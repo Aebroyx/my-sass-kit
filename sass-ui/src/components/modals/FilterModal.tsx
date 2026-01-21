@@ -110,7 +110,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
         opacity: isPositioned ? 1 : 0,
       }}
     >
-      <div ref={modalRef} className="bg-white dark:bg-gray-800 p-4 rounded-md shadow-md w-[350px] md:w-[500px] lg:w-[540px]" onClick={(e) => e.stopPropagation()}>
+      <div ref={modalRef} className="bg-white dark:bg-card-bg p-4 rounded-md shadow-md w-[350px] md:w-[500px] lg:w-[540px]" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center font-medium text-lg text-gray-900 dark:text-gray-100">
             <FunnelIcon className="h-5 w-5 mr-2" />
@@ -125,7 +125,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
           <select 
             value={selectedField} 
             onChange={(e) => setSelectedField(e.target.value)} 
-            className="border dark:border-gray-600 px-2 py-1 rounded w-full sm:w-1/2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="border dark:border-border-dark px-2 py-1 rounded w-full sm:w-1/2 bg-white dark:bg-input-bg text-gray-900 dark:text-gray-100"
           >
             <option value="" disabled>
               Select Field
@@ -143,7 +143,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
             <select 
               value={filterValue} 
               onChange={(e) => setFilterValue(e.target.value)} 
-              className="border dark:border-gray-600 px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="border dark:border-border-dark px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-input-bg text-gray-900 dark:text-gray-100"
             >
               <option value="" disabled>
                 Select Value
@@ -159,7 +159,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
               type="date"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="border dark:border-gray-600 px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="border dark:border-border-dark px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-input-bg text-gray-900 dark:text-gray-100"
             />
           ) : (
             <input
@@ -167,7 +167,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
               placeholder="Filter Value"
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
-              className="border dark:border-gray-600 px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              className="border dark:border-border-dark px-2 py-1 rounded w-full sm:w-2/3 bg-white dark:bg-input-bg text-gray-900 dark:text-gray-100"
             />
           )}
 
@@ -182,7 +182,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose, onApply, fie
 
         <ul className="my-6 space-y-2 h-36 overflow-y-auto">
           {filters.map((f, idx) => (
-            <li key={idx} className="flex justify-between items-center border-b dark:border-gray-700 pb-1">
+            <li key={idx} className="flex justify-between items-center border-b dark:border-border-dark pb-1">
               <div className="text-gray-900 dark:text-gray-100">
                 <span className="font-medium">
                   {fields.find((field) => field.value === f.field)?.label || f.field}

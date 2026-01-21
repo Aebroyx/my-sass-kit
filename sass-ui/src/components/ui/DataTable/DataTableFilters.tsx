@@ -109,7 +109,7 @@ export function DataTableFilters({
               leaveFrom="opacity-100 translate-y-0"
               leaveTo="opacity-0 translate-y-1"
             >
-              <PopoverPanel className="absolute left-0 z-10 mt-2 w-80 origin-top-left rounded-lg bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-800 dark:ring-gray-700">
+              <PopoverPanel className="absolute left-0 z-10 mt-2 w-80 origin-top-left rounded-lg bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-card-bg dark:ring-border-dark">
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                     Add Filter
@@ -126,7 +126,7 @@ export function DataTableFilters({
                         setSelectedField(e.target.value);
                         setFilterValue('');
                       }}
-                      className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                      className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                     >
                       <option value="">Select field...</option>
                       {filterFields
@@ -149,7 +149,7 @@ export function DataTableFilters({
                         <select
                           value={filterValue}
                           onChange={(e) => setFilterValue(e.target.value)}
-                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                         >
                           <option value="">Select value...</option>
                           {currentField.options.map((opt) => (
@@ -163,7 +163,7 @@ export function DataTableFilters({
                           type="date"
                           value={filterValue}
                           onChange={(e) => setFilterValue(e.target.value)}
-                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                         />
                       ) : (
                         <input
@@ -171,7 +171,7 @@ export function DataTableFilters({
                           value={filterValue}
                           onChange={(e) => setFilterValue(e.target.value)}
                           placeholder="Enter value..."
-                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                         />
                       )}
                     </div>

@@ -151,7 +151,7 @@ export default function MasterTable<T>({
             value={searchInput}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
-            className="mt-1 block w-full rounded-md border px-3 py-2 pl-10 shadow-sm focus:outline-primary focus:ring-1 dark:bg-gray-700 dark:text-white"
+            className="mt-1 block w-full rounded-md border px-3 py-2 pl-10 shadow-sm focus:outline-primary focus:ring-1 dark:bg-input-bg dark:text-white dark:border-border-dark"
           />
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 mt-1 h-[calc(100%-0.5rem)]">
             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -191,8 +191,8 @@ export default function MasterTable<T>({
       <div className="mt-8 flow-root">
         <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <table className="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-              <thead>
+            <table className="min-w-full divide-y divide-gray-300 dark:divide-border-dark">
+              <thead className="bg-gray-50 dark:bg-transparent">
                 <tr>
                   {columns.map((column) => (
                     <th
@@ -221,10 +221,10 @@ export default function MasterTable<T>({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+              <tbody className="divide-y divide-gray-200 dark:divide-border-dark bg-white dark:bg-card-bg">
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, index) => (
-                    <tr key={index} className="even:bg-gray-50 dark:even:bg-gray-700/50">
+                    <tr key={index} className="even:bg-gray-50 dark:even:bg-hover-bg/50">
                       {columns.map((column) => (
                         <td
                           key={column.key.toString()}
@@ -250,7 +250,7 @@ export default function MasterTable<T>({
                   data.map((item) => (
                     <tr
                       key={keyExtractor(item)}
-                      className="even:bg-gray-50 dark:even:bg-gray-700/50"
+                      className="even:bg-gray-50 dark:even:bg-hover-bg/50"
                     >
                       {columns.map((column) => (
                         <td
@@ -274,19 +274,19 @@ export default function MasterTable<T>({
       </div>
 
       {/* Pagination Section */}
-      <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6">
+      <div className="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-border-dark bg-white dark:bg-card-bg px-4 py-3 sm:px-6">
         <div className="flex flex-1 justify-between sm:hidden">
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
-            className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-border-dark bg-white dark:bg-card-bg px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/5 dark:hover:bg-hover-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages}
-            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-border-dark bg-white dark:bg-card-bg px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50/5 dark:hover:bg-hover-bg disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -308,7 +308,7 @@ export default function MasterTable<T>({
                 id="pageSize"
                 value={pageSize}
                 onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                className="rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-gray-800 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
+                className="rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-card-bg ring-1 ring-inset ring-gray-300 dark:ring-border-dark focus:ring-2 focus:ring-primary sm:text-sm sm:leading-6"
               >
                 {[5, 10, 20, 50].map((size) => (
                   <option key={size} value={size}>
@@ -321,7 +321,7 @@ export default function MasterTable<T>({
               <button
                 onClick={() => onPageChange(page - 1)}
                 disabled={page === 1}
-                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-border-dark hover:bg-gray-50/5 dark:hover:bg-hover-bg focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Previous</span>
                 <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -333,7 +333,7 @@ export default function MasterTable<T>({
                   className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
                     pageNum === page
                       ? 'z-10 bg-primary text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-                      : 'text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0'
+                      : 'text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-border-dark hover:bg-gray-50/5 dark:hover:bg-hover-bg focus:z-20 focus:outline-offset-0'
                   }`}
                 >
                   {pageNum}
@@ -342,7 +342,7 @@ export default function MasterTable<T>({
               <button
                 onClick={() => onPageChange(page + 1)}
                 disabled={page === totalPages}
-                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 dark:text-gray-500 ring-1 ring-inset ring-gray-300 dark:ring-border-dark hover:bg-gray-50/5 dark:hover:bg-hover-bg focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="sr-only">Next</span>
                 <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

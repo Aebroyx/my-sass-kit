@@ -162,10 +162,10 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
           ? 'rgb(185 28 28)' // red-700
           : state.isFocused
           ? 'var(--color-primary, rgb(99 102 241))'
-          : 'rgb(75 85 99)', // gray-600
+          : '#3f4147', // border-dark
         backgroundColor: error
           ? 'rgba(127, 29, 29, 0.1)' // red-900/10
-          : 'rgb(55 65 81)', // gray-700 (matching Input)
+          : '#1e1f22', // input-bg
         boxShadow: state.isFocused
           ? error
             ? '0 0 0 1px rgba(239, 68, 68, 0.2)' // red ring (1px)
@@ -176,7 +176,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
             ? 'rgb(185 28 28)'
             : state.isFocused
             ? 'var(--color-primary, rgb(99 102 241))'
-            : 'rgb(75 85 99)',
+            : '#3f4147',
         },
         cursor: state.isDisabled ? 'not-allowed' : 'pointer',
         opacity: state.isDisabled ? 0.6 : 1,
@@ -203,8 +203,8 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
         ...base,
         borderRadius: '0.375rem', // rounded-md
         marginTop: '0.25rem',
-        border: '1px solid rgb(55 65 81)', // gray-700
-        backgroundColor: 'rgb(31 41 55)', // gray-800
+        border: '1px solid #3f4147', // border-dark
+        backgroundColor: '#313338', // card-bg
         boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
         overflow: 'hidden',
         zIndex: 9999,
@@ -222,7 +222,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
           ? 'rgba(99, 102, 241, 0.05)'
           : state.isFocused
           ? 'rgba(99, 102, 241, 0.2)'
-          : 'rgb(31 41 55)',
+          : '#313338',
         color: state.isSelected || state.isFocused
           ? 'var(--color-primary, rgb(99 102 241))'
           : 'white',

@@ -106,11 +106,11 @@ export function DataTable<TData>({
       />
 
       {/* Table Container */}
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-border-dark dark:bg-card-bg">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-border-dark">
             {/* Table Header */}
-            <thead className="bg-gray-50 dark:bg-gray-900/50">
+            <thead className="bg-gray-50 dark:bg-transparent">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -122,7 +122,7 @@ export function DataTable<TData>({
                         key={header.id}
                         scope="col"
                         className={`px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 ${
-                          canSort ? 'cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-800' : ''
+                          canSort ? 'cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-hover-bg' : ''
                         }`}
                         onClick={() => canSort && handleSort(columnId)}
                       >
@@ -143,13 +143,13 @@ export function DataTable<TData>({
             </thead>
 
             {/* Table Body */}
-            <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+            <tbody className="divide-y divide-gray-200 bg-white dark:divide-border-dark dark:bg-card-bg">
               {isLoading ? (
                 // Skeleton rows
                 Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                   <tr
                     key={`skeleton-${rowIndex}`}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    className="transition-colors hover:bg-gray-50/5 dark:hover:bg-hover-bg/50"
                   >
                     {columns.map((_, colIndex) => (
                       <td
@@ -180,7 +180,7 @@ export function DataTable<TData>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    className="transition-colors hover:bg-gray-50/5 dark:hover:bg-hover-bg/50"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td

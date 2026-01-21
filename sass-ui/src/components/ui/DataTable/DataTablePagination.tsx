@@ -59,7 +59,7 @@ export function DataTablePagination({
   };
 
   return (
-    <div className="flex flex-col gap-4 border-t border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-800 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <div className="flex flex-col gap-4 border-t border-gray-200 bg-white px-4 py-4 dark:border-border-dark dark:bg-card-bg sm:flex-row sm:items-center sm:justify-between sm:px-6">
       {/* Left side - Showing results */}
       <div className="text-sm text-gray-700 dark:text-gray-300">
         Showing <span className="font-semibold text-gray-900 dark:text-white">{startItem}</span> to{' '}
@@ -78,7 +78,7 @@ export function DataTablePagination({
             id="pageSize"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
           >
             {PAGE_SIZES.map((size) => (
               <option key={size} value={size}>
@@ -94,7 +94,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(1)}
             disabled={page === 1}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50/5 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-400 dark:hover:bg-hover-bg dark:hover:text-gray-200"
             aria-label="First page"
           >
             <ChevronDoubleLeftIcon className="h-4 w-4" />
@@ -104,7 +104,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50/5 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-400 dark:hover:bg-hover-bg dark:hover:text-gray-200"
             aria-label="Previous page"
           >
             <ChevronLeftIcon className="h-4 w-4" />
@@ -127,7 +127,7 @@ export function DataTablePagination({
                   className={`inline-flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors ${
                     pageNum === page
                       ? 'bg-primary text-white shadow-sm'
-                      : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                      : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50/5 dark:border-border-dark dark:bg-card-bg dark:text-gray-300 dark:hover:bg-hover-bg'
                   }`}
                 >
                   {pageNum}
@@ -146,7 +146,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(page + 1)}
             disabled={page === pageCount || pageCount === 0}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50/5 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-400 dark:hover:bg-hover-bg dark:hover:text-gray-200"
             aria-label="Next page"
           >
             <ChevronRightIcon className="h-4 w-4" />
@@ -156,7 +156,7 @@ export function DataTablePagination({
           <button
             onClick={() => onPageChange(pageCount)}
             disabled={page === pageCount || pageCount === 0}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 transition-colors hover:bg-gray-50/5 hover:text-gray-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-border-dark dark:bg-card-bg dark:text-gray-400 dark:hover:bg-hover-bg dark:hover:text-gray-200"
             aria-label="Last page"
           >
             <ChevronDoubleRightIcon className="h-4 w-4" />

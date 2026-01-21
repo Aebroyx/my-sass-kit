@@ -379,8 +379,8 @@ function MenuItemComponent({
         onClick={handleClick}
         className={classNames(
           isActive || isChildActive
-            ? 'bg-gray-100 dark:bg-gray-900/50 text-primary border-l-4 border-transparent'
-            : 'text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary border-l-4 border-transparent',
+            ? 'bg-gray-100 dark:bg-hover-bg text-primary border-l-4 border-transparent'
+            : 'text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary border-l-4 border-transparent',
           'group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-all duration-200',
           depth > 0 ? 'pl-10' : '',
           collapsed && depth === 0 ? 'justify-center' : ''
@@ -646,7 +646,7 @@ export function Sidebar({
 
   const renderSidebarContent = (isMobile = false) => (
     <div className={classNames(
-      'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-gray-700 bg-background',
+      'flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 dark:border-border-dark bg-background',
       isCollapsed && !isMobile ? 'px-3' : 'px-4',
       'pb-4'
     )}>
@@ -685,7 +685,7 @@ export function Sidebar({
             placeholder="Search menu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+            className="w-full rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-input-bg py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
           />
           {searchQuery && (
             <button
@@ -706,8 +706,8 @@ export function Sidebar({
               <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-center gap-x-3 p-2">
-                    <div className="size-5 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-                    {!isCollapsed && <div className="h-4 flex-1 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />}
+                    <div className="size-5 rounded bg-gray-200 dark:bg-hover-bg animate-pulse" />
+                    {!isCollapsed && <div className="h-4 flex-1 rounded bg-gray-200 dark:bg-hover-bg animate-pulse" />}
                   </div>
                 ))}
               </div>
@@ -753,7 +753,7 @@ export function Sidebar({
           <li className="mt-auto">
             <Menu as="div" className="relative">
               <MenuButton className={classNames(
-                'group -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-foreground hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors',
+                'group -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary transition-colors',
                 isCollapsed && !isMobile ? 'justify-center' : 'justify-between'
               )}>
                 <div className={classNames(
@@ -800,7 +800,7 @@ export function Sidebar({
               <button
                 onClick={() => handleSetCollapsed(!isCollapsed)}
                 className={classNames(
-                  'mt-2 -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary transition-colors',
+                  'mt-2 -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-gray-400 hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary transition-colors',
                   isCollapsed ? 'justify-center' : 'justify-between'
                 )}
                 title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -811,7 +811,7 @@ export function Sidebar({
                   ) : (
                     <>
                       <ChevronDoubleLeftIcon className="size-5 shrink-0" aria-hidden="true" />
-                      <span>Collapse</span>
+                      <span>Minimize</span>
                     </>
                   )}
                 </div>
