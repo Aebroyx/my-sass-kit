@@ -116,7 +116,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
               <MenuButton className="-m-1.5 flex items-center p-1.5 focus:outline-none">
                 <span className="sr-only">Open user menu</span>
                 <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-secondary">
-                    <span className="text-[16px] font-bold text-foreground">
+                    <span className="text-[16px] font-bold text-gray-900">
                       {user?.name ? `${user.name.charAt(0)}${user.name.split(' ').length > 1 ? user.name.split(' ')[user.name.split(' ').length - 1].charAt(0) : ''}`.toUpperCase() : '?'}
                     </span>
                 </div>

@@ -1,20 +1,19 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { ReactNode } from 'react';
+import { FilterCondition, FilterFieldOption } from '@/components/modals/AdvancedFilterModal';
 
 // Filter field type for defining filterable columns
-export type FilterField = {
-  key: string;
-  label: string;
-  type: 'select' | 'text' | 'date';
-  options?: { value: string; label: string }[];
-};
+export type FilterField = FilterFieldOption;
 
-// Active filter type
+// Active filter type (for backward compatibility)
 export type ActiveFilter = {
   field: string;
   value: string;
   label?: string;
 };
+
+// Re-export for convenience
+export type { FilterCondition, FilterFieldOption };
 
 // DataTable props with generic type
 export interface DataTableProps<TData> {
@@ -47,8 +46,8 @@ export interface DataTableProps<TData> {
 
   // Filtering
   filterFields?: FilterField[];
-  filters?: Record<string, string>;
-  onFilterChange?: (filters: Record<string, string>) => void;
+  filters?: FilterCondition[];
+  onFilterChange?: (filters: FilterCondition[]) => void;
 
   // Actions
   onAdd?: () => void;
@@ -74,8 +73,8 @@ export interface DataTableSearchProps {
 // Filters props
 export interface DataTableFiltersProps {
   filterFields: FilterField[];
-  filters: Record<string, string>;
-  onFilterChange: (filters: Record<string, string>) => void;
+  filters: FilterCondition[];
+  onFilterChange: (filters: FilterCondition[]) => void;
 }
 
 // Toolbar props
@@ -85,8 +84,8 @@ export interface DataTableToolbarProps {
   searchPlaceholder?: string;
   onSearch: (value: string) => void;
   filterFields?: FilterField[];
-  filters?: Record<string, string>;
-  onFilterChange?: (filters: Record<string, string>) => void;
+  filters?: FilterCondition[];
+  onFilterChange?: (filters: FilterCondition[]) => void;
   onAdd?: () => void;
   addButtonText?: string;
 }

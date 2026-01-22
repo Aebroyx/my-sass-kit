@@ -1,4 +1,5 @@
 import axiosInstance, { handleApiError } from '@/lib/axios';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 // Types
 export interface RoleResponse {
@@ -46,7 +47,7 @@ export interface GetAllRolesParams {
   search?: string;
   sortBy?: string;
   sortDesc?: boolean;
-  filters?: Record<string, string>;
+  filters?: FilterCondition[];
 }
 
 export interface RoleMenuPermission {
@@ -70,12 +71,11 @@ class RoleService {
       if (params.search) queryParams.append('search', params.search);
       if (params.sortBy) queryParams.append('sortBy', params.sortBy);
       if (params.sortDesc !== undefined) queryParams.append('sortDesc', params.sortDesc.toString());
-      if (params.filters) {
-        Object.entries(params.filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            queryParams.append(`filters[${key}]`, value.toString());
-          }
-        });
+      
+      // Handle advanced filter conditions
+      if (params.filters && params.filters.length > 0) {
+        // Send filters as JSON string in query params
+        queryParams.append('filters', JSON.stringify(params.filters));
       }
 
       const response = await axiosInstance.get<ApiResponse<PaginatedResponse<RoleResponse>>>(`/roles?${queryParams.toString()}`);

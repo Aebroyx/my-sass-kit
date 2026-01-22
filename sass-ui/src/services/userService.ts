@@ -1,5 +1,6 @@
 import { User } from '@/store/features/authSlice';
 import axiosInstance, { handleApiError } from '@/lib/axios';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -100,7 +101,7 @@ export interface GetAllUsersParams {
   search?: string;
   sortBy?: string;
   sortDesc?: boolean;
-  filters?: Record<string, string>;
+  filters?: FilterCondition[];
 }
 
 class UserService {
@@ -175,12 +176,11 @@ class UserService {
       if (params.search) queryParams.append('search', params.search);
       if (params.sortBy) queryParams.append('sortBy', params.sortBy);
       if (params.sortDesc !== undefined) queryParams.append('sortDesc', params.sortDesc.toString());
-      if (params.filters) {
-        Object.entries(params.filters).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== '') {
-            queryParams.append(`filters[${key}]`, value.toString());
-          }
-        });
+      
+      // Handle advanced filter conditions
+      if (params.filters && params.filters.length > 0) {
+        // Send filters as JSON string in query params
+        queryParams.append('filters', JSON.stringify(params.filters));
       }
 
       const response = await axiosInstance.get<ApiResponse<PaginatedResponse<GetUserResponse>>>(`/users?${queryParams.toString()}`);

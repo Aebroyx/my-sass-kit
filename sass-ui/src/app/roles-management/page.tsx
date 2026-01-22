@@ -12,6 +12,7 @@ import DeleteModal from '@/components/modals/DeleteModal';
 import { useGetAllRoles, useDeleteRole } from '@/hooks/useRole';
 import { RoleResponse } from '@/services/roleService';
 import { useDebounce } from '@/hooks/useDebounce';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 // Helper function to check if role can be deleted
 const canDeleteRole = (role: RoleResponse): boolean => {
@@ -33,7 +34,7 @@ export default function RolesManagementPage() {
   const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortDesc, setSortDesc] = useState(true);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<FilterCondition[]>([]);
 
   // Debounce search
   const search = useDebounce(searchInput, 300);
@@ -79,7 +80,7 @@ export default function RolesManagementPage() {
     setPage(1);
   };
 
-  const handleFilterChange = (newFilters: Record<string, string>) => {
+  const handleFilterChange = (newFilters: FilterCondition[]) => {
     setFilters(newFilters);
     setPage(1);
   };
@@ -152,7 +153,7 @@ export default function RolesManagementPage() {
         cell: ({ row }) => (
           <span className="text-gray-500 dark:text-gray-400">
             {row.original.created_at
-              ? format(new Date(row.original.created_at), 'MMM dd, yyyy')
+              ? format(new Date(row.original.created_at), 'yyyy-MM-dd HH:mm')
               : '-'}
           </span>
         ),
@@ -205,18 +206,37 @@ export default function RolesManagementPage() {
   // Define filter fields
   const filterFields: FilterField[] = [
     {
+      key: 'name',
+      label: 'Role Name',
+      type: 'text',
+    },
+    {
+      key: 'display_name',
+      label: 'Display Name',
+      type: 'text',
+    },
+    {
       key: 'is_active',
       label: 'Status',
-      type: 'select',
+      type: 'boolean',
       options: [
         { value: 'true', label: 'Active' },
         { value: 'false', label: 'Inactive' },
       ],
     },
     {
-      key: 'name',
-      label: 'Role Name',
-      type: 'text',
+      key: 'is_default',
+      label: 'Default Role',
+      type: 'boolean',
+      options: [
+        { value: 'true', label: 'Yes' },
+        { value: 'false', label: 'No' },
+      ],
+    },
+    {
+      key: 'created_at',
+      label: 'Created At',
+      type: 'date',
     },
   ];
 

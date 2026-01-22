@@ -12,6 +12,7 @@ import DeleteModal from '@/components/modals/DeleteModal';
 import { useDeleteUser, useGetAllUsers } from '@/hooks/useUser';
 import { GetUserResponse } from '@/services/userService';
 import { useDebounce } from '@/hooks/useDebounce';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 // Helper function to check if user can be deleted
 const canDeleteUser = (user: GetUserResponse): boolean => {
@@ -32,7 +33,7 @@ export default function UsersManagementPage() {
   const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortDesc, setSortDesc] = useState(true);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<FilterCondition[]>([]);
 
   // Debounce search
   const search = useDebounce(searchInput, 300);
@@ -78,7 +79,7 @@ export default function UsersManagementPage() {
     setPage(1); // Reset to first page on search
   };
 
-  const handleFilterChange = (newFilters: Record<string, string>) => {
+  const handleFilterChange = (newFilters: FilterCondition[]) => {
     setFilters(newFilters);
     setPage(1); // Reset to first page when filters change
   };
@@ -182,15 +183,6 @@ export default function UsersManagementPage() {
   // Define filter fields
   const filterFields: FilterField[] = [
     {
-      key: 'role',
-      label: 'Role',
-      type: 'select',
-      options: [
-        { value: 'admin', label: 'Admin' },
-        { value: 'user', label: 'User' },
-      ],
-    },
-    {
       key: 'name',
       label: 'Name',
       type: 'text',
@@ -205,23 +197,26 @@ export default function UsersManagementPage() {
       label: 'Username',
       type: 'text',
     },
+    {
+      key: 'created_at',
+      label: 'Created At',
+      type: 'date',
+    },
   ];
 
   // Calculate page count
   const pageCount = data?.total ? Math.ceil(data.total / pageSize) : 0;
 
-  if (error) {
-    return (
-      <Navigation>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch users'}
-        </div>
-      </Navigation>
-    );
-  }
-
   return (
     <Navigation>
+      {/* Show error message but don't break the page */}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+          <p className="font-semibold">Error loading users</p>
+          <p className="text-sm mt-1">{error instanceof Error ? error.message : 'Failed to fetch users'}</p>
+        </div>
+      )}
+      
       <DataTable<GetUserResponse>
         columns={columns}
         data={data?.data || []}

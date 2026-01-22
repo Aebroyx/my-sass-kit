@@ -46,7 +46,41 @@ export function FormCard({
 
       {/* Form Card */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-border-dark dark:bg-card-bg">
-        <div className="p-6 sm:p-8">
+        <div
+          className="p-6 sm:p-8
+          [&_label]:text-sm [&_label]:font-medium [&_label]:text-gray-700 dark:[&_label]:text-gray-300
+          [&_input:not([type='checkbox']):not([type='radio'])]:mt-1
+          [&_input:not([type='checkbox']):not([type='radio'])]:block
+          [&_input:not([type='checkbox']):not([type='radio'])]:w-full
+          [&_input:not([type='checkbox']):not([type='radio'])]:rounded-md
+          [&_input:not([type='checkbox']):not([type='radio'])]:border
+          [&_input:not([type='checkbox']):not([type='radio'])]:border-gray-300
+          [&_input:not([type='checkbox']):not([type='radio'])]:bg-white
+          [&_input:not([type='checkbox']):not([type='radio'])]:px-3
+          [&_input:not([type='checkbox']):not([type='radio'])]:py-2
+          [&_input:not([type='checkbox']):not([type='radio'])]:text-gray-900
+          [&_input:not([type='checkbox']):not([type='radio'])]:shadow-sm
+          [&_input:not([type='checkbox']):not([type='radio'])]:placeholder:text-gray-400
+          [&_input:not([type='checkbox']):not([type='radio'])]:focus:outline-primary
+          [&_input:not([type='checkbox']):not([type='radio'])]:focus:ring-1
+          [&_input:not([type='checkbox']):not([type='radio'])]:focus:ring-primary/30
+          dark:[&_input:not([type='checkbox']):not([type='radio'])]:border-border-dark
+          dark:[&_input:not([type='checkbox']):not([type='radio'])]:bg-input-bg
+          dark:[&_input:not([type='checkbox']):not([type='radio'])]:text-white
+          dark:[&_input:not([type='checkbox']):not([type='radio'])]:placeholder:text-gray-500
+
+          [&_textarea]:mt-1 [&_textarea]:block [&_textarea]:w-full [&_textarea]:rounded-md
+          [&_textarea]:border [&_textarea]:border-gray-300 [&_textarea]:bg-white
+          [&_textarea]:px-3 [&_textarea]:py-2 [&_textarea]:text-gray-900 [&_textarea]:shadow-sm
+          [&_textarea]:placeholder:text-gray-400 [&_textarea]:focus:outline-primary [&_textarea]:focus:ring-1 [&_textarea]:focus:ring-primary/30
+          dark:[&_textarea]:border-border-dark dark:[&_textarea]:bg-input-bg dark:[&_textarea]:text-white dark:[&_textarea]:placeholder:text-gray-500
+
+          [&_select]:mt-1 [&_select]:block [&_select]:w-full [&_select]:rounded-md
+          [&_select]:border [&_select]:border-gray-300 [&_select]:bg-white
+          [&_select]:px-3 [&_select]:py-2 [&_select]:text-gray-900 [&_select]:shadow-sm
+          [&_select]:focus:outline-primary [&_select]:focus:ring-1 [&_select]:focus:ring-primary/30
+          dark:[&_select]:border-border-dark dark:[&_select]:bg-input-bg dark:[&_select]:text-gray-100"
+        >
           {children}
         </div>
 

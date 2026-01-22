@@ -49,3 +49,10 @@ body {
     text-wrap: balance;
   }
 }
+
+/* react-loading-skeleton: make dark-mode skeletons subtle (not white) */
+.dark .react-loading-skeleton {
+  /* v3+ uses CSS variables for theme */
+  --base-color: rgba(255, 255, 255, 0.06);
+  --highlight-color: rgba(255, 255, 255, 0.10);
+}

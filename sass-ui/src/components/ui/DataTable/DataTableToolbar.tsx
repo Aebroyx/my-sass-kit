@@ -12,7 +12,7 @@ export function DataTableToolbar({
   searchPlaceholder,
   onSearch,
   filterFields = [],
-  filters = {},
+  filters = [],
   onFilterChange,
   onAdd,
   addButtonText = 'Add'

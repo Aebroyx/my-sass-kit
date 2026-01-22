@@ -1,4 +1,5 @@
 import axiosInstance, { handleApiError } from '@/lib/axios';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 // Types
 export interface MenuResponse {
@@ -95,7 +96,7 @@ export interface GetAllMenusParams {
   search?: string;
   sortBy?: string;
   sortDesc?: boolean;
-  filters?: Record<string, string>;
+  filters?: FilterCondition[];
 }
 
 export interface PaginatedResponse<T> {
@@ -178,9 +179,20 @@ class MenuService {
   // Get all menus with pagination
   async getAllMenus(params: GetAllMenusParams): Promise<PaginatedResponse<MenuResponse>> {
     try {
-      const response = await axiosInstance.get<ApiResponse<PaginatedResponse<MenuResponse>>>('/menus', {
-        params,
-      });
+      const queryParams = new URLSearchParams();
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.pageSize) queryParams.append('pageSize', params.pageSize.toString());
+      if (params.search) queryParams.append('search', params.search);
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortDesc !== undefined) queryParams.append('sortDesc', params.sortDesc.toString());
+      
+      // Handle advanced filter conditions
+      if (params.filters && params.filters.length > 0) {
+        // Send filters as JSON string in query params
+        queryParams.append('filters', JSON.stringify(params.filters));
+      }
+
+      const response = await axiosInstance.get<ApiResponse<PaginatedResponse<MenuResponse>>>(`/menus?${queryParams.toString()}`);
       return response.data.data;
     } catch (error) {
       throw handleApiError(error);

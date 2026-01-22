@@ -41,13 +41,13 @@ export const ProfileModal = ({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-card-bg">
                 <div>
-                        <DialogTitle as="h3" className="text-base font-semibold text-gray-900">
+                        <DialogTitle as="h3" className="text-base font-semibold text-gray-900 dark:text-gray-100">
                             Profile
                         </DialogTitle>
                     <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-secondary">
-                        <span className="text-[32px] font-bold text-foreground">
+                        <span className="text-[32px] font-bold text-gray-900">
                         {user?.name ? `${user.name.charAt(0)}${user.name.split(' ').length > 1 ? user.name.split(' ')[user.name.split(' ').length - 1].charAt(0) : ''}`.toUpperCase() : '?'}
                         </span>
                     </div>
@@ -55,17 +55,17 @@ export const ProfileModal = ({
                         <div className="mt-2 space-y-4">
                         <div className="flex justify-between gap-4">
                             <div className="flex flex-col items-center flex-1">
-                            <label htmlFor="name" className="text-sm text-gray-600 mb-1">Name</label>
-                            <h1 id="name" className="w-full text-lg font-bold">{user?.name}</h1>
+                            <label htmlFor="name" className="text-sm text-gray-600 dark:text-gray-400 mb-1">Name</label>
+                            <h1 id="name" className="w-full text-lg font-bold text-gray-900 dark:text-white">{user?.name}</h1>
                             </div>
                             <div className="flex flex-col items-center flex-1">
-                            <label htmlFor="email" className="text-sm text-gray-600 mb-1">Email</label>
-                            <h1 id="email" className="w-full text-lg font-bold">{user?.email}</h1>
+                            <label htmlFor="email" className="text-sm text-gray-600 dark:text-gray-400 mb-1">Email</label>
+                            <h1 id="email" className="w-full text-lg font-bold text-gray-900 dark:text-white">{user?.email}</h1>
                             </div>
                         </div>
                         <div className="flex flex-col items-center">
-                            <label htmlFor="role" className="text-sm text-gray-600 mb-1">Role</label>
-                            <h1 id="role" className="w-full text-lg font-bold capitalize">{user?.role?.display_name || user?.role?.name}</h1>
+                            <label htmlFor="role" className="text-sm text-gray-600 dark:text-gray-400 mb-1">Role</label>
+                            <h1 id="role" className="w-full text-lg font-bold capitalize text-gray-900 dark:text-white">{user?.role?.display_name || user?.role?.name}</h1>
                         </div>
                         </div>
                     </div>

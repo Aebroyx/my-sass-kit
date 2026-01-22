@@ -1,11 +1,11 @@
 'use client';
 
-import { ReactNode, useState, useRef } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
-import FilterModal from '@/components/modals/FilterModal';
+import AdvancedFilterModal, { FilterCondition, FilterFieldOption } from '@/components/modals/AdvancedFilterModal';
 
 // Define the base column type
 type Column<T> = {
@@ -16,13 +16,8 @@ type Column<T> = {
   sortable?: boolean;
 };
 
-// Define filter field type
-type FilterField = {
-  key: string;
-  label: string;
-  type: 'select' | 'text' | 'date';
-  options?: { value: string; label: string }[];
-};
+// Define filter field type (keeping for backward compatibility)
+type FilterField = FilterFieldOption;
 
 // Define the master table props with generic type
 type MasterTableProps<T> = {
@@ -46,7 +41,7 @@ type MasterTableProps<T> = {
   onSearch: (search: string) => void;
   // Filter props
   filterFields?: FilterField[];
-  onFilterChange: (filters: Record<string, string>) => void;
+  onFilterChange: (filters: FilterCondition[]) => void;
   // Sort props
   sortBy: string;
   sortDesc: boolean;
@@ -81,9 +76,20 @@ export default function MasterTable<T>({
   onSortChange,
 }: MasterTableProps<T>) {
   const [searchInput, setSearchInput] = useState('');
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<FilterCondition[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const filterButtonRef = useRef<HTMLDivElement>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => setIsDarkMode(root.classList.contains('dark'));
+    update();
+
+    const observer = new MutationObserver(update);
+    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Handle search input change
   const handleSearchChange = (value: string) => {
@@ -92,27 +98,15 @@ export default function MasterTable<T>({
   };
 
   // Handle filter changes from modal
-  const handleFilterApply = (filterItems: { field: string; value: string }[]) => {
-    const newFilters = filterItems.reduce((acc, { field, value }) => ({
-      ...acc,
-      [field]: value
-    }), {});
-    setFilters(newFilters);
-    onFilterChange(newFilters);
+  const handleFilterApply = (filterConditions: FilterCondition[]) => {
+    setFilters(filterConditions);
+    onFilterChange(filterConditions);
   };
 
   // Calculate pagination values
   const totalPages = Math.ceil(total / pageSize);
   const startItem = (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, total);
-
-  // Convert filterFields to modal fields format
-  const modalFields = filterFields.map(field => ({
-    label: field.label,
-    value: field.key,
-    type: field.type,
-    options: field.options
-  }));
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 mt-10">
@@ -168,9 +162,9 @@ export default function MasterTable<T>({
             >
               <FunnelIcon className="h-5 w-5" />
               Filter
-              {Object.keys(filters).length > 0 && (
+              {filters.length > 0 && (
                 <span className="ml-1 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
-                  {Object.keys(filters).length}
+                  {filters.length}
                 </span>
               )}
             </SecondaryButton>
@@ -179,12 +173,12 @@ export default function MasterTable<T>({
       </div>
 
       {/* Filter Modal */}
-      <FilterModal
+      <AdvancedFilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApply={handleFilterApply}
-        fields={modalFields}
-        filterButtonRef={filterButtonRef}
+        fields={filterFields}
+        initialConditions={filters}
       />
 
       {/* Table Section */}
@@ -232,7 +226,10 @@ export default function MasterTable<T>({
                             column.className || ''
                           }`}
                         >
-                          <Skeleton />
+                          <Skeleton
+                            baseColor={isDarkMode ? 'transparent' : undefined}
+                            highlightColor={isDarkMode ? 'rgba(255,255,255,0.06)' : undefined}
+                          />
                         </td>
                       ))}
                     </tr>
