@@ -194,3 +194,76 @@ func (s *RightsAccessService) DeleteRightsAccess(id uint) error {
 	}
 	return result.Error
 }
+
+// BulkSaveUserRightsAccess saves/updates multiple permission overrides for a user
+func (s *RightsAccessService) BulkSaveUserRightsAccess(userID uint, req *models.BulkUserRightsAccessRequest) ([]models.RightsAccessResponse, error) {
+	// Verify user exists
+	var user models.Users
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	// Step 1: Deduplicate permissions by menu_id (keep last occurrence)
+	// This prevents duplicate key violations if frontend sends duplicates
+	uniquePerms := make(map[uint]models.UserMenuPermission)
+	for _, perm := range req.Permissions {
+		uniquePerms[perm.MenuID] = perm
+	}
+
+	// Convert back to slice
+	deduplicatedPerms := make([]models.UserMenuPermission, 0, len(uniquePerms))
+	for _, perm := range uniquePerms {
+		deduplicatedPerms = append(deduplicatedPerms, perm)
+	}
+
+	// Start transaction
+	tx := s.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Step 2: Delete ALL existing rights access for this user
+	// This simplifies the logic and avoids duplicate key issues
+	if err := tx.Where("user_id = ?", userID).Delete(&models.RightsAccess{}).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Step 3: Insert all new permissions
+	for _, perm := range deduplicatedPerms {
+		// Verify menu exists
+		var menu models.Menu
+		if err := tx.First(&menu, perm.MenuID).Error; err != nil {
+			tx.Rollback()
+			return nil, errors.New("menu not found: " + string(rune(perm.MenuID)))
+		}
+
+		// Create new rights access record
+		ra := models.RightsAccess{
+			UserID:    userID,
+			MenuID:    perm.MenuID,
+			CanRead:   perm.CanRead,
+			CanWrite:  perm.CanWrite,
+			CanUpdate: perm.CanUpdate,
+			CanDelete: perm.CanDelete,
+		}
+		if err := tx.Create(&ra).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	// Return updated rights
+	return s.GetUserRightsAccess(userID)
+}
+
+// DeleteAllUserRightsAccess deletes all permission overrides for a user
+func (s *RightsAccessService) DeleteAllUserRightsAccess(userID uint) error {
+	return s.db.Where("user_id = ?", userID).Delete(&models.RightsAccess{}).Error
+}

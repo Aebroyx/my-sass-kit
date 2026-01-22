@@ -18,6 +18,12 @@ func RegisterRightsAccessRoutes(router *gin.RouterGroup, h *handlers.RightsAcces
 		// Create or update permission override
 		ra.POST("", h.CreateOrUpdateRightsAccess)
 
+		// Bulk save permission overrides for a user
+		ra.POST("/user/:userId/bulk", h.BulkSaveUserRightsAccess)
+
+		// Delete all permission overrides for a user
+		ra.DELETE("/user/:userId", h.DeleteAllUserRightsAccess)
+
 		// Delete permission override
 		ra.DELETE("/:id", h.DeleteRightsAccess)
 	}

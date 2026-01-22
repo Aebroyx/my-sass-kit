@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { userService } from '@/services/userService';
+import { PrimaryButton } from '@/components/ui/buttons';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
@@ -98,7 +99,7 @@ export default function RegisterPage() {
                   autoComplete="name"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                   placeholder="John Doe"
                   disabled={isLoading}
                 />
@@ -118,7 +119,7 @@ export default function RegisterPage() {
                   autoComplete="username"
                   value={formData.username}
                   onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                   placeholder="johndoe"
                   disabled={isLoading}
                 />
@@ -138,7 +139,7 @@ export default function RegisterPage() {
                   autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                   placeholder="john@example.com"
                   disabled={isLoading}
                 />
@@ -158,7 +159,7 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
@@ -178,7 +179,7 @@ export default function RegisterPage() {
                   autoComplete="new-password"
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
@@ -187,13 +188,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <button
+            <PrimaryButton
               type="submit"
+              loading={isLoading}
               disabled={isLoading}
-              className="flex w-full justify-center rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              fullWidth
             >
               {isLoading ? 'Creating account...' : 'Create Account'}
-            </button>
+            </PrimaryButton>
           </div>
         </form>
 

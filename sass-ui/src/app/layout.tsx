@@ -3,7 +3,6 @@ import localFont from 'next/font/local';
 import './globals.css';
 import Providers from '../components/Providers';
 import { ThemeProvider } from '../components/ThemeProvider';
-import ThemeToggle from '../components/ThemeToggle';
 import { Toaster } from 'react-hot-toast';
 import QueryProvider from "@/providers/QueryProvider";
 
@@ -33,7 +32,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          // Apply theme before paint to avoid "flash to light".
+          dangerouslySetInnerHTML={{
+            __html: `
+(() => {
+  try {
+    const stored = localStorage.getItem('theme');
+    const theme = stored === 'dark' || stored === 'light'
+      ? stored
+      : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    if (theme === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  } catch (_) {}
+})();
+            `.trim(),
+          }}
+        />
+      </head>
       <body>
         <QueryProvider>
           <Providers>

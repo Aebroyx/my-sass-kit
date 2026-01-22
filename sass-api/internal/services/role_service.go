@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/Aebroyx/sass-api/internal/config"
 	"github.com/Aebroyx/sass-api/internal/domain/models"
@@ -167,6 +168,17 @@ func (s *RoleService) DeleteRole(id uint) error {
 	var role models.Role
 	if err := s.db.First(&role, id).Error; err != nil {
 		return errors.New("role not found")
+	}
+
+	// Prevent deletion of protected roles
+	protectedRoles := []string{"root", "admin", "user"}
+	if role.Name != "" {
+		roleNameLower := strings.ToLower(role.Name)
+		for _, protectedRole := range protectedRoles {
+			if roleNameLower == protectedRole {
+				return fmt.Errorf("cannot delete protected role: %s", role.Name)
+			}
+		}
 	}
 
 	// Prevent deletion of roles that have users assigned

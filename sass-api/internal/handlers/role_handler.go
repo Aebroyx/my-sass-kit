@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Aebroyx/sass-api/internal/common"
 	"github.com/Aebroyx/sass-api/internal/domain/models"
@@ -143,13 +144,19 @@ func (h *RoleHandler) DeleteRole(c *gin.Context) {
 	}
 
 	if err := h.roleService.DeleteRole(uint(id)); err != nil {
+		errMsg := err.Error()
 		switch {
-		case err.Error() == "role not found":
+		case errMsg == "role not found":
 			common.SendError(c, http.StatusNotFound, "Role not found", common.CodeNotFound, nil)
-		case err.Error() == "cannot delete the default role":
+		case errMsg == "cannot delete the default role":
 			common.SendError(c, http.StatusBadRequest, "Cannot delete the default role", common.CodeBadRequest, nil)
 		default:
-			common.SendError(c, http.StatusBadRequest, err.Error(), common.CodeBadRequest, nil)
+			// Check if it's a protected role error
+			if strings.Contains(errMsg, "cannot delete protected role") {
+				common.SendError(c, http.StatusForbidden, errMsg, common.CodeForbidden, nil)
+			} else {
+				common.SendError(c, http.StatusBadRequest, errMsg, common.CodeBadRequest, nil)
+			}
 		}
 		return
 	}

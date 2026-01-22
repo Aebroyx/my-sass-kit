@@ -1,172 +1,275 @@
 'use client';
 
-import { Navigation } from "@/components/Navigation";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { useCreateUser } from "@/hooks/useUser";
+import { useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { Navigation } from '@/components/Navigation';
+import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
+import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
+import { useCreateUser } from '@/hooks/useUser';
+import { useGetActiveRoles } from '@/hooks/useRole';
+import { useGetMenuTree, useGetRoleMenus, useBulkSaveUserRightsAccess } from '@/hooks/useMenu';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 import toast from 'react-hot-toast';
-
-const roleOptions = [
-  { value: 'user', label: 'User' },
-  { value: 'admin', label: 'Admin' },
-];
 
 export default function AddUserPage() {
   const router = useRouter();
+  const { user: currentUser } = useSelector((state: RootState) => state.auth);
   const createUser = useCreateUser();
+  const bulkSaveRightsAccess = useBulkSaveUserRightsAccess();
+  const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
+  const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'user',
     username: '',
     password: '',
+    role: '',
   });
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFieldErrors({});
-    await createUser.mutateAsync(formData);
-  };
+  // Get the selected role's ID
+  const selectedRole = roles?.find((r) => r.name === formData.role);
+  const { data: roleMenus, isLoading: roleMenusLoading } = useGetRoleMenus(selectedRole?.id);
+
+  // Convert roles to select options
+  const roleOptions =
+    roles?.map((role) => ({
+      value: role.name,
+      label: role.display_name,
+    })) || [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear field error when user starts typing
-    if (fieldErrors[name]) {
-      setFieldErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleRoleChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      role: value
-    }));
-    if (fieldErrors.role) {
-      setFieldErrors(prev => ({
-        ...prev,
-        role: ''
-      }));
+    setFormData((prev) => ({ ...prev, role: value }));
+    if (errors.role) {
+      setErrors((prev) => ({ ...prev, role: '' }));
     }
   };
 
+  // Use ref to store permissions to avoid re-renders
+  const permissionsRef = useRef<MenuPermission[]>([]);
+
+  const handlePermissionsChange = useCallback((newPermissions: MenuPermission[]) => {
+    permissionsRef.current = newPermissions;
+  }, []);
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
+    if (!formData.username.trim()) newErrors.username = 'Username is required';
+    if (!formData.password.trim()) newErrors.password = 'Password is required';
+    else if (formData.password.length < 8)
+      newErrors.password = 'Password must be at least 8 characters';
+    if (!formData.role) newErrors.role = 'Role is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate() || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      // Get the role ID from the selected role
+      const role = roles?.find((r) => r.name === formData.role);
+      if (!role) {
+        toast.error('Invalid role selected');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Create the user first
+      const newUser = await createUser.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        username: formData.username,
+        password: formData.password,
+        role_id: role.id,
+      });
+
+      // Extract user ID from response
+      const userId = newUser?.id;
+
+      // Save ONLY custom permission overrides (not inherited ones)
+      if (permissionsRef.current.length > 0 && userId) {
+        // Filter to only include permissions with at least one custom override
+        const customPermissions = permissionsRef.current.filter((p) => p.isCustomized);
+
+        if (customPermissions.length > 0) {
+          const permissionsToSave = customPermissions.map((p) => ({
+            menu_id: p.menuId,
+            can_read: p.canRead,       // nullable: null = inherit, true/false = override
+            can_write: p.canWrite,     // nullable: null = inherit, true/false = override
+            can_update: p.canUpdate,   // nullable: null = inherit, true/false = override
+            can_delete: p.canDelete,   // nullable: null = inherit, true/false = override
+          }));
+
+          await bulkSaveRightsAccess.mutateAsync({
+            userId,
+            permissions: permissionsToSave,
+          });
+        }
+      }
+
+      toast.success('User created successfully');
+      router.push('/users-management');
+    } catch (error) {
+      console.error('Create failed:', error);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Just navigate back without saving
+    router.push('/users-management');
+  };
+
+  const isLoading = rolesLoading || menusLoading;
+
+  // Check if user has permission to create users
+  // Role-based check: root or admin roles have full access
+  const canCreate = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
+
   return (
     <Navigation>
-      <div className="mb-6">
-        <button
-          type="button"
-          onClick={() => router.push('/users-management')}
-          className="inline-flex items-center gap-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+      {!canCreate ? (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+          You don&apos;t have permission to create users.
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <FormCard
+            title="Create New User"
+            description="Add a new user to your application with role-based permissions."
+            actions={
+              <FormActions>
+                <SecondaryButton
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </SecondaryButton>
+                <PrimaryButton
+                  type="submit"
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Creating...' : 'Create User'}
+                </PrimaryButton>
+              </FormActions>
+            }
         >
-          <ArrowLeftIcon className="h-5 w-5" aria-hidden="true" />
-          Back to Users List
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-12">
-          <div className="border-b border-gray-900/10 pb-12">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Add New User</h1>
-
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-4">
+          <div className="space-y-8">
+            <FormSection
+              title="Personal Information"
+              description="Basic information about the user."
+            >
+              <FormRow columns={2}>
                 <Input
-                  label="Name"
                   id="name"
                   name="name"
-                  type="text"
-                  required
+                  label="Full Name"
+                  placeholder="John Doe"
                   value={formData.name}
                   onChange={handleChange}
-                  error={fieldErrors.name}
-                  autoComplete="name"
+                  error={errors.name}
+                  required
                 />
-              </div>
-
-              <div className="sm:col-span-4">
                 <Input
-                  label="Email address"
                   id="email"
                   name="email"
                   type="email"
-                  required
+                  label="Email Address"
+                  placeholder="john@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  error={fieldErrors.email}
-                  autoComplete="email"
+                  error={errors.email}
+                  required
                 />
-              </div>
+              </FormRow>
+            </FormSection>
 
-              <div className="sm:col-span-4">
+            <FormSection
+              title="Account Details"
+              description="Login credentials and role assignment."
+            >
+              <FormRow columns={2}>
                 <Input
-                  label="Username"
                   id="username"
                   name="username"
-                  type="text"
-                  required
+                  label="Username"
+                  placeholder="johndoe"
                   value={formData.username}
                   onChange={handleChange}
-                  error={fieldErrors.username}
-                  helperText="Username must be unique"
+                  error={errors.username}
+                  helperText="Must be unique. Used for login."
+                  required
                 />
-              </div>
-
-              <div className="sm:col-span-4">
                 <Input
-                  label="Password"
                   id="password"
                   name="password"
                   type="password"
-                  required
+                  label="Password"
+                  placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  error={fieldErrors.password}
-                  helperText="Password must be at least 8 characters long"
+                  error={errors.password}
+                  helperText="Minimum 8 characters."
+                  required
                 />
-              </div>
+              </FormRow>
 
-              <div className="sm:col-span-3">
+              <FormRow>
                 <Select
                   label="Role"
                   name="role"
                   options={roleOptions}
                   value={formData.role}
                   onChange={handleRoleChange}
-                  error={fieldErrors.role}
+                  error={errors.role}
+                  disabled={rolesLoading}
+                  placeholder="Select a role"
                   required
                 />
-              </div>
-            </div>
-          </div>
-        </div>
+              </FormRow>
+            </FormSection>
 
-        <div className="mt-6 flex items-center justify-end gap-x-4">
-          <button
-            type="button"
-            onClick={() => router.push('/users-management')}
-            className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-600"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={createUser.isPending}
-            className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:cursor-not-allowed dark:bg-primary dark:hover:bg-primary-dark"
-          >
-            {createUser.isPending ? 'Creating...' : 'Submit'}
-          </button>
-        </div>
+            {/* Menu Permissions Section */}
+            {formData.role && (
+              <FormSection
+                title="Menu Permissions"
+                description="Customize menu access for this user. By default, permissions are inherited from the selected role. Click on any permission to customize it."
+              >
+                <MenuPermissionsEditor
+                  roleMenus={roleMenus || []}
+                  allMenus={menuTree || []}
+                  isLoading={isLoading || roleMenusLoading}
+                  onChange={handlePermissionsChange}
+                  disabled={isSubmitting}
+                />
+              </FormSection>
+            )}
+          </div>
+        </FormCard>
       </form>
+      )}
     </Navigation>
   );
 }

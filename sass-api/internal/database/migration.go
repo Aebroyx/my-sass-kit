@@ -79,6 +79,13 @@ func updateExistingUsersRole(db *gorm.DB) error {
 func seedDefaultRoles(db *gorm.DB) error {
 	defaultRoles := []models.Role{
 		{
+			Name:        "root",
+			DisplayName: "Root",
+			Description: "Super administrator with unrestricted access",
+			IsDefault:   false,
+			IsActive:    true,
+		},
+		{
 			Name:        "admin",
 			DisplayName: "Administrator",
 			Description: "Full system access",
