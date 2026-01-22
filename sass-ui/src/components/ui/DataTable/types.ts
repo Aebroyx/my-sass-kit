@@ -51,6 +51,7 @@ export interface DataTableProps<TData> {
 
   // Actions
   onAdd?: () => void;
+  addHref?: string;
   addButtonText?: string;
 }
 
@@ -87,5 +88,6 @@ export interface DataTableToolbarProps {
   filters?: FilterCondition[];
   onFilterChange?: (filters: FilterCondition[]) => void;
   onAdd?: () => void;
+  addHref?: string;
   addButtonText?: string;
 }

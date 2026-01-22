@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 import {
   Dialog,
   DialogBackdrop,
@@ -343,7 +344,6 @@ function MenuItemComponent({
   onExpandSidebar,
   enableExpandAnimation,
 }: MenuItemComponentProps) {
-  const router = useRouter();
   const hasChildren = menu.children && menu.children.length > 0;
   const isExpanded = expandedMenus.has(menu.id);
   const IconComponent = getIconComponent(menu.icon);
@@ -363,8 +363,6 @@ function MenuItemComponent({
         return;
       }
       toggleExpanded(menu.id);
-    } else if (menu.path) {
-      router.push(menu.path);
     }
   };
 
@@ -373,47 +371,73 @@ function MenuItemComponent({
     return null;
   }
 
+  const itemClassName = classNames(
+    isActive || isChildActive
+      ? 'bg-gray-100 dark:bg-hover-bg text-primary border-l-4 border-transparent'
+      : 'text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary border-l-4 border-transparent',
+    'group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-all duration-200',
+    depth > 0 ? 'pl-10' : '',
+    collapsed && depth === 0 ? 'justify-center' : ''
+  );
+
+  const itemContent = (
+    <>
+      <IconComponent
+        aria-hidden="true"
+        className={classNames(
+          isActive || isChildActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary',
+          'size-5 shrink-0 transition-colors duration-200',
+        )}
+      />
+      <div
+        className={classNames(
+          'flex min-w-0 flex-1 items-center gap-x-2 overflow-hidden transition-[max-width,opacity] ease-in-out',
+          // Animate both expand + collapse (width + fade) for smoother feel.
+          collapsed ? 'max-w-0 opacity-0 duration-200' : 'max-w-[40rem] opacity-100 duration-200'
+        )}
+        aria-hidden={collapsed}
+      >
+        <span className="flex-1 text-left truncate">{menu.name}</span>
+        {hasChildren && (
+          <ChevronRightIcon
+            aria-hidden="true"
+            className={classNames(
+              'size-4 shrink-0 text-gray-400 transition-transform duration-200',
+              isExpanded ? 'rotate-90' : ''
+            )}
+          />
+        )}
+      </div>
+    </>
+  );
+
   return (
     <li>
-      <button
-        onClick={handleClick}
-        className={classNames(
-          isActive || isChildActive
-            ? 'bg-gray-100 dark:bg-hover-bg text-primary border-l-4 border-transparent'
-            : 'text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary border-l-4 border-transparent',
-          'group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-all duration-200',
-          depth > 0 ? 'pl-10' : '',
-          collapsed && depth === 0 ? 'justify-center' : ''
-        )}
-        title={collapsed ? menu.name : undefined}
-      >
-        <IconComponent
-          aria-hidden="true"
-          className={classNames(
-            isActive || isChildActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary',
-            'size-5 shrink-0 transition-colors duration-200',
-          )}
-        />
-        <div
-          className={classNames(
-            'flex min-w-0 flex-1 items-center gap-x-2 overflow-hidden transition-[max-width,opacity] ease-in-out',
-            // Animate both expand + collapse (width + fade) for smoother feel.
-            collapsed ? 'max-w-0 opacity-0 duration-200' : 'max-w-[40rem] opacity-100 duration-200'
-          )}
-          aria-hidden={collapsed}
+      {hasChildren ? (
+        <button
+          onClick={handleClick}
+          className={itemClassName}
+          title={collapsed ? menu.name : undefined}
         >
-          <span className="flex-1 text-left truncate">{menu.name}</span>
-          {hasChildren && (
-            <ChevronRightIcon
-              aria-hidden="true"
-              className={classNames(
-                'size-4 shrink-0 text-gray-400 transition-transform duration-200',
-                isExpanded ? 'rotate-90' : ''
-              )}
-            />
-          )}
-        </div>
-      </button>
+          {itemContent}
+        </button>
+      ) : menu.path ? (
+        <Link
+          href={menu.path}
+          className={itemClassName}
+          title={collapsed ? menu.name : undefined}
+        >
+          {itemContent}
+        </Link>
+      ) : (
+        <button
+          disabled
+          className={itemClassName}
+          title={collapsed ? menu.name : undefined}
+        >
+          {itemContent}
+        </button>
+      )}
 
       {/* Children */}
       {hasChildren && !collapsed && (

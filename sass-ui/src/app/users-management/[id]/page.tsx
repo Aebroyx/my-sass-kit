@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
@@ -154,11 +155,6 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleCancel = () => {
-    // Just navigate back without saving
-    router.push('/users-management');
-  };
-
   if (error) {
     return (
       <Navigation>
@@ -190,13 +186,14 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           actions={
             canEdit ? (
               <FormActions>
-                <SecondaryButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
+                <Link href="/users-management">
+                  <SecondaryButton
+                    type="button"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </SecondaryButton>
+                </Link>
                 <PrimaryButton
                   type="submit"
                   loading={isSubmitting}
@@ -277,6 +274,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                     onChange={handleChange}
                     error={errors.username}
                     helperText="Must be unique. Used for login."
+                    autoComplete="username"
                     disabled={!canEdit}
                     required
                   />
@@ -290,6 +288,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                     onChange={handleChange}
                     error={errors.password}
                     helperText="Leave blank to keep current password."
+                    autoComplete="new-password"
                     disabled={!canEdit}
                   />
                 </FormRow>

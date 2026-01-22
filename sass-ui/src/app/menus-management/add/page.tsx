@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
@@ -108,10 +109,6 @@ export default function AddMenuPage() {
     }
   };
 
-  const handleCancel = () => {
-    router.push('/menus-management');
-  };
-
   return (
     <Navigation>
       <form onSubmit={handleSubmit}>
@@ -120,13 +117,14 @@ export default function AddMenuPage() {
           description="Add a new menu item to your application's navigation system."
           actions={
             <FormActions>
-              <SecondaryButton
-                type="button"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </SecondaryButton>
+              <Link href="/menus-management">
+                <SecondaryButton
+                  type="button"
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </SecondaryButton>
+              </Link>
               <PrimaryButton
                 type="submit"
                 loading={isSubmitting}

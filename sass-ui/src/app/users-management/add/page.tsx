@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
@@ -135,11 +136,6 @@ export default function AddUserPage() {
     }
   };
 
-  const handleCancel = () => {
-    // Just navigate back without saving
-    router.push('/users-management');
-  };
-
   const isLoading = rolesLoading || menusLoading;
 
   // Check if user has permission to create users
@@ -159,13 +155,14 @@ export default function AddUserPage() {
             description="Add a new user to your application with role-based permissions."
             actions={
               <FormActions>
-                <SecondaryButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
+                <Link href="/users-management">
+                  <SecondaryButton
+                    type="button"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </SecondaryButton>
+                </Link>
                 <PrimaryButton
                   type="submit"
                   loading={isSubmitting}
@@ -220,6 +217,7 @@ export default function AddUserPage() {
                   onChange={handleChange}
                   error={errors.username}
                   helperText="Must be unique. Used for login."
+                  autoComplete="username"
                   required
                 />
                 <Input
@@ -232,6 +230,7 @@ export default function AddUserPage() {
                   onChange={handleChange}
                   error={errors.password}
                   helperText="Minimum 8 characters."
+                  autoComplete="new-password"
                   required
                 />
               </FormRow>

@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode } from 'react';
+import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
 
 interface FormCardProps {
   title: string;
@@ -19,20 +19,18 @@ export function FormCard({
   children,
   actions,
 }: FormCardProps) {
-  const router = useRouter();
-
   return (
     <div className="mx-auto max-w-5xl">
       {/* Header */}
       <div className="mb-8">
         {backHref && (
-          <button
-            onClick={() => router.push(backHref)}
+          <Link
+            href={backHref}
             className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-4 w-4" />
             Back
-          </button>
+          </Link>
         )}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           {title}

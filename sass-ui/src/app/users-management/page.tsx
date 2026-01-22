@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
@@ -25,8 +25,6 @@ const canDeleteUser = (user: GetUserResponse): boolean => {
 };
 
 export default function UsersManagementPage() {
-  const router = useRouter();
-
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -148,13 +146,13 @@ export default function UsersManagementPage() {
           const canDelete = canDeleteUser(row.original);
           return (
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => router.push(`/users-management/${row.original.id}`)}
+              <Link
+                href={`/users-management/${row.original.id}`}
                 className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
                 title="View user"
               >
                 <EyeIcon className="h-5 w-5" />
-              </button>
+              </Link>
               {canDelete ? (
                 <button
                   onClick={() => openDeleteModal(row.original.id)}
@@ -177,7 +175,7 @@ export default function UsersManagementPage() {
         },
       },
     ],
-    [router]
+    []
   );
 
   // Define filter fields
@@ -245,7 +243,7 @@ export default function UsersManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        onAdd={() => router.push('/users-management/add')}
+        addHref="/users-management/add"
         addButtonText="Add User"
         // Empty state
         emptyState={
@@ -253,12 +251,12 @@ export default function UsersManagementPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               No users found
             </p>
-            <button
-              onClick={() => router.push('/users-management/add')}
-              className="mt-2 text-sm font-medium text-primary hover:text-primary-dark"
+            <Link
+              href="/users-management/add"
+              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
             >
               Add your first user
-            </button>
+            </Link>
           </div>
         }
       />
