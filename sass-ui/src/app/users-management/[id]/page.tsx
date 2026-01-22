@@ -321,7 +321,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                     userRightsAccess={userRightsAccess || []}
                     isLoading={isPermissionsLoading}
                     onChange={handlePermissionsChange}
-                    disabled={isSubmitting || !canEdit}
+                    disabled={isSubmitting}
                   />
                 </FormSection>
               )}

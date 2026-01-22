@@ -151,7 +151,7 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const canEdit = currentUser?.role === 'root' || currentUser?.role === 'admin';
+  const canEdit = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
   const isDataLoading = isLoading || menusLoading;
 
   return (
