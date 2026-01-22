@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
@@ -12,17 +12,16 @@ import DeleteModal from '@/components/modals/DeleteModal';
 import { useDeleteMenu, useGetAllMenus } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
 import { useDebounce } from '@/hooks/useDebounce';
+import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 
 export default function MenusManagementPage() {
-  const router = useRouter();
-
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState('order_index');
   const [sortDesc, setSortDesc] = useState(false);
-  const [filters, setFilters] = useState<Record<string, string>>({});
+  const [filters, setFilters] = useState<FilterCondition[]>([]);
 
   // Debounce search
   const search = useDebounce(searchInput, 300);
@@ -68,7 +67,7 @@ export default function MenusManagementPage() {
     setPage(1); // Reset to first page on search
   };
 
-  const handleFilterChange = (newFilters: Record<string, string>) => {
+  const handleFilterChange = (newFilters: FilterCondition[]) => {
     setFilters(newFilters);
     setPage(1); // Reset to first page when filters change
   };
@@ -157,13 +156,13 @@ export default function MenusManagementPage() {
         header: '',
         cell: ({ row }) => (
           <div className="flex justify-end gap-2">
-            <button
-              onClick={() => router.push(`/menus-management/${row.original.id}`)}
+            <Link
+              href={`/menus-management/${row.original.id}`}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
               title="Edit menu"
             >
               <PencilIcon className="h-5 w-5" />
-            </button>
+            </Link>
             <button
               onClick={() => openDeleteModal(row.original.id)}
               className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
@@ -175,20 +174,11 @@ export default function MenusManagementPage() {
         ),
       },
     ],
-    [router]
+    []
   );
 
   // Define filter fields
   const filterFields: FilterField[] = [
-    {
-      key: 'is_active',
-      label: 'Status',
-      type: 'select',
-      options: [
-        { value: 'true', label: 'Active' },
-        { value: 'false', label: 'Inactive' },
-      ],
-    },
     {
       key: 'name',
       label: 'Name',
@@ -198,6 +188,20 @@ export default function MenusManagementPage() {
       key: 'path',
       label: 'Path',
       type: 'text',
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      type: 'boolean',
+      options: [
+        { value: 'true', label: 'Active' },
+        { value: 'false', label: 'Inactive' },
+      ],
+    },
+    {
+      key: 'created_at',
+      label: 'Created At',
+      type: 'date',
     },
   ];
 
@@ -244,7 +248,7 @@ export default function MenusManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        onAdd={() => router.push('/menus-management/add')}
+        addHref="/menus-management/add"
         addButtonText="Add Menu"
         // Empty state
         emptyState={
@@ -252,12 +256,12 @@ export default function MenusManagementPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               No menus found
             </p>
-            <button
-              onClick={() => router.push('/menus-management/add')}
-              className="mt-2 text-sm font-medium text-primary hover:text-primary-dark"
+            <Link
+              href="/menus-management/add"
+              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
             >
               Add your first menu
-            </button>
+            </Link>
           </div>
         }
       />

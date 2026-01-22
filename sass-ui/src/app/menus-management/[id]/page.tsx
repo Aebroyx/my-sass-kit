@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
@@ -137,10 +138,6 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleCancel = () => {
-    router.push('/menus-management');
-  };
-
   if (error) {
     return (
       <Navigation>
@@ -163,13 +160,14 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
           actions={
             canEdit ? (
               <FormActions>
-                <SecondaryButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
+                <Link href="/menus-management">
+                  <SecondaryButton
+                    type="button"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </SecondaryButton>
+                </Link>
                 <PrimaryButton
                   type="submit"
                   loading={isSubmitting}

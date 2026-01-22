@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input, { Textarea, Toggle } from '@/components/ui/Input';
@@ -95,11 +96,6 @@ export default function AddRolePage() {
     }
   };
 
-  const handleCancel = () => {
-    // Just navigate back without saving
-    router.push('/roles-management');
-  };
-
   // Check if user has permission to create roles
   // Role-based check: root or admin roles have full access
   const canCreate = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
@@ -117,13 +113,14 @@ export default function AddRolePage() {
             description="Add a new role to manage user permissions in your application."
             actions={
               <FormActions>
-                <SecondaryButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
+                <Link href="/roles-management">
+                  <SecondaryButton
+                    type="button"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </SecondaryButton>
+                </Link>
                 <PrimaryButton
                   type="submit"
                   loading={isSubmitting}

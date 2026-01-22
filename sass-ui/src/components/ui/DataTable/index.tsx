@@ -47,6 +47,7 @@ export function DataTable<TData>({
   onFilterChange,
   // Actions
   onAdd,
+  addHref,
   addButtonText,
 }: DataTableProps<TData>) {
   // Create table instance
@@ -102,6 +103,7 @@ export function DataTable<TData>({
         filters={filters}
         onFilterChange={onFilterChange}
         onAdd={onAdd}
+        addHref={addHref}
         addButtonText={addButtonText}
       />
 

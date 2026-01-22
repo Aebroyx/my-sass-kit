@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
 import { EyeIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
@@ -26,8 +26,6 @@ const canDeleteRole = (role: RoleResponse): boolean => {
 };
 
 export default function RolesManagementPage() {
-  const router = useRouter();
-
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -171,13 +169,13 @@ export default function RolesManagementPage() {
           
           return (
             <div className="flex justify-end gap-2">
-              <button
-                onClick={() => router.push(`/roles-management/${row.original.id}`)}
+              <Link
+                href={`/roles-management/${row.original.id}`}
                 className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
                 title="Edit role"
               >
                 <EyeIcon className="h-5 w-5" />
-              </button>
+              </Link>
               {canDelete && !row.original.is_default ? (
                 <button
                   onClick={() => openDeleteModal(row.original.id)}
@@ -200,7 +198,7 @@ export default function RolesManagementPage() {
         },
       },
     ],
-    [router]
+    []
   );
 
   // Define filter fields
@@ -283,7 +281,7 @@ export default function RolesManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        onAdd={() => router.push('/roles-management/add')}
+        addHref="/roles-management/add"
         addButtonText="Add Role"
         // Empty state
         emptyState={
@@ -291,12 +289,12 @@ export default function RolesManagementPage() {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               No roles found
             </p>
-            <button
-              onClick={() => router.push('/roles-management/add')}
-              className="mt-2 text-sm font-medium text-primary hover:text-primary-dark"
+            <Link
+              href="/roles-management/add"
+              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
             >
               Create your first role
-            </button>
+            </Link>
           </div>
         }
       />

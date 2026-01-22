@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input, { Textarea, Toggle } from '@/components/ui/Input';
@@ -116,11 +117,6 @@ export default function EditRolePage({ params }: { params: { id: string } }) {
     }
   };
 
-  const handleCancel = () => {
-    // Just navigate back without saving
-    router.push('/roles-management');
-  };
-
   if (error) {
     return (
       <Navigation>
@@ -144,13 +140,14 @@ export default function EditRolePage({ params }: { params: { id: string } }) {
           actions={
             canEdit ? (
               <FormActions>
-                <SecondaryButton
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
+                <Link href="/roles-management">
+                  <SecondaryButton
+                    type="button"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </SecondaryButton>
+                </Link>
                 <PrimaryButton
                   type="submit"
                   loading={isSubmitting}

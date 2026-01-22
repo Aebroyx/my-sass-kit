@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import { PrimaryButton } from '@/components/ui/buttons';
 import { DataTableSearch } from './DataTableSearch';
@@ -15,6 +16,7 @@ export function DataTableToolbar({
   filters = [],
   onFilterChange,
   onAdd,
+  addHref,
   addButtonText = 'Add'
 }: DataTableToolbarProps) {
   const hasFilters = filterFields.length > 0;
@@ -56,7 +58,14 @@ export function DataTableToolbar({
         </div>
 
         {/* Right side - Add Button */}
-        {onAdd && (
+        {addHref ? (
+          <Link href={addHref}>
+            <PrimaryButton type="button">
+              <PlusIcon className="h-5 w-5" />
+              {addButtonText}
+            </PrimaryButton>
+          </Link>
+        ) : onAdd ? (
           <PrimaryButton
             type="button"
             onClick={onAdd}
@@ -64,7 +73,7 @@ export function DataTableToolbar({
             <PlusIcon className="h-5 w-5" />
             {addButtonText}
           </PrimaryButton>
-        )}
+        ) : null}
       </div>
     </div>
   );
