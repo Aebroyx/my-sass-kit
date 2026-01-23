@@ -11,6 +11,7 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import { useState } from 'react';
 import { ProfileModal } from './modals/ProfileModal';
+import { CommandPalette } from './CommandPalette';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -30,6 +31,7 @@ export function TopNav({ onMenuClick }: TopNavProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -89,19 +91,19 @@ export function TopNav({ onMenuClick }: TopNavProps) {
         <div aria-hidden="true" className="h-6 w-px bg-foreground lg:hidden" />
 
         <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-          <form action="#" method="GET" className="grid flex-1 grid-cols-1">
-            <input
-              name="search"
-              type="search"
-              placeholder="Search"
-              aria-label="Search"
-              className="col-start-1 row-start-1 block size-full bg-background pl-8 text-base text-foreground outline-none focus:outline-none focus:ring-0 placeholder:text-foreground sm:text-sm/6"
-            />
+          <button
+            onClick={() => setIsCommandPaletteOpen(true)}
+            className="flex flex-1 items-center gap-x-2 text-sm text-gray-500 hover:text-foreground transition-colors"
+          >
             <MagnifyingGlassIcon
               aria-hidden="true"
-              className="pointer-events-none col-start-1 row-start-1 size-5 self-center text-foreground"
+              className="size-5 text-foreground"
             />
-          </form>
+            <span className="hidden sm:block">Search...</span>
+            <kbd className="hidden sm:inline-flex h-5 items-center gap-1 rounded border border-gray-200 dark:border-border-dark bg-gray-100 dark:bg-hover-bg px-1.5 font-mono text-[10px] font-medium text-gray-400">
+              {typeof navigator !== 'undefined' && navigator.platform?.includes('Mac') ? '⌘' : 'Ctrl'}K
+            </kbd>
+          </button>
           <div className="flex items-center gap-x-4 lg:gap-x-6">
             <button type="button" className="-m-2.5 p-2.5 text-foreground hover:text-foreground">
               <span className="sr-only">View notifications</span>
@@ -158,6 +160,10 @@ export function TopNav({ onMenuClick }: TopNavProps) {
       <ProfileModal
         open={isProfileModalOpen}
         setOpen={setIsProfileModalOpen}
+      />
+      <CommandPalette
+        open={isCommandPaletteOpen}
+        setOpen={setIsCommandPaletteOpen}
       />
     </>
   );
