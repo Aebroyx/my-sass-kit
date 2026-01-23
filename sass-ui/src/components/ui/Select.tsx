@@ -22,6 +22,7 @@ interface SelectProps {
   placeholder?: string;
   className?: string;
   name?: string;
+  hideLabel?: boolean;
 }
 
 // Custom dropdown indicator with Heroicon
@@ -47,6 +48,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       placeholder = 'Select an option',
       className = '',
       name,
+      hideLabel = false,
     },
     ref
   ) => {
@@ -257,14 +259,16 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
     const isDarkMode = theme === 'dark';
 
     return (
-      <div className="space-y-2">
-        <label
-          htmlFor={selectId}
-          className="block text-sm font-medium text-foreground"
-        >
-          {label}
-          {required && <span className="ml-1 text-red-500">*</span>}
-        </label>
+      <div className={hideLabel ? '' : 'space-y-2'}>
+        {!hideLabel && (
+          <label
+            htmlFor={selectId}
+            className="block text-sm font-medium text-foreground"
+          >
+            {label}
+            {required && <span className="ml-1 text-red-500">*</span>}
+          </label>
+        )}
         <ReactSelect<SelectOption, false>
           ref={ref}
           inputId={selectId}

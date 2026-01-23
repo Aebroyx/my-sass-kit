@@ -8,10 +8,6 @@ import {
   DialogBackdrop,
   DialogPanel,
   TransitionChild,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
   Transition,
 } from '@headlessui/react';
 import {
@@ -21,7 +17,6 @@ import {
   ShieldCheckIcon,
   Squares2X2Icon,
   XMarkIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   MagnifyingGlassIcon,
   ChevronDoubleLeftIcon,
@@ -126,9 +121,14 @@ import {
   CubeTransparentIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import ThemeToggle from './ThemeToggle';
 import { useGetUserMenus } from '@/hooks/useMenu';
 import { MenuWithPermissions } from '@/services/menuService';
+import { SettingsModal } from './modals/SettingsModal';
+import { useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import { logout } from '@/store/features/authSlice';
+import toast from 'react-hot-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Icon mapping for dynamic icons
 const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -397,7 +397,7 @@ function MenuItemComponent({
         )}
         aria-hidden={collapsed}
       >
-        <span className="flex-1 text-left truncate">{menu.name}</span>
+        <span className="flex-1 text-left truncate font-semibold">{menu.name}</span>
         {hasChildren && (
           <ChevronRightIcon
             aria-hidden="true"
@@ -586,16 +586,54 @@ export function Sidebar({
   setCollapsed,
 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
   const [enableExpandAnimation, setEnableExpandAnimation] = useState(false);
   const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const { data: userMenus, isLoading } = useGetUserMenus();
 
   // Use external collapsed state if provided, otherwise use internal
   const isCollapsed = setCollapsed ? collapsed : internalCollapsed;
   const handleSetCollapsed = setCollapsed || setInternalCollapsed;
+
+  const handleSignOut = async () => {
+    try {
+      // Call the logout API endpoint to clear HTTP-only cookies
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Important for cookies
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to logout');
+      }
+
+      // Clear all React Query cache to prevent showing old user's data
+      queryClient.clear();
+
+      // After cookies are cleared, update Redux state
+      dispatch(logout());
+      // Toast success message
+      toast.success('Logged out successfully');
+
+      // Redirect to login page
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Even if the API call fails, we should still clear the local state
+      queryClient.clear();
+      dispatch(logout());
+      router.push('/auth/login');
+    }
+  };
 
   // Build menu tree
   const menuTree = useMemo(() => {
@@ -775,49 +813,25 @@ export function Sidebar({
 
           {/* Settings */}
           <li className="mt-auto">
-            <Menu as="div" className="relative">
-              <MenuButton className={classNames(
+            <button
+              onClick={() => setIsSettingsModalOpen(true)}
+              className={classNames(
                 'group -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary transition-colors',
                 isCollapsed && !isMobile ? 'justify-center' : 'justify-between'
+              )}
+              title={isCollapsed && !isMobile ? 'Settings' : undefined}
+            >
+              <div className={classNames(
+                'flex items-center gap-x-3',
+                isCollapsed && !isMobile ? '' : ''
               )}>
-                <div className={classNames(
-                  'flex items-center gap-x-3',
-                  isCollapsed && !isMobile ? '' : ''
-                )}>
-                  <Cog6ToothIcon
-                    aria-hidden="true"
-                    className="size-5 shrink-0 text-gray-400 group-hover:text-primary transition-colors"
-                  />
-                  {(!isCollapsed || isMobile) && <span>Settings</span>}
-                </div>
-                {(!isCollapsed || isMobile) && (
-                  <ChevronDownIcon
-                    className="size-4 text-gray-400 group-hover:text-primary transition-colors"
-                    aria-hidden="true"
-                  />
-                )}
-              </MenuButton>
-              <Transition
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <MenuItems className="absolute bottom-full left-0 z-10 mb-2 w-56 origin-bottom-left rounded-lg bg-background shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 focus:outline-none">
-                  <div className="p-2">
-                    <MenuItem>
-                      {() => (
-                        <div className="px-2 py-1.5">
-                          <ThemeToggle />
-                        </div>
-                      )}
-                    </MenuItem>
-                  </div>
-                </MenuItems>
-              </Transition>
-            </Menu>
+                <Cog6ToothIcon
+                  aria-hidden="true"
+                  className="size-5 shrink-0 text-gray-400 group-hover:text-primary transition-colors"
+                />
+                {(!isCollapsed || isMobile) && <span>Settings</span>}
+              </div>
+            </button>
 
             {/* Collapse Button - Desktop only */}
             {!isMobile && (
@@ -890,6 +904,13 @@ export function Sidebar({
       )}>
         {renderSidebarContent(false)}
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        open={isSettingsModalOpen}
+        setOpen={setIsSettingsModalOpen}
+        onLogout={handleSignOut}
+      />
     </>
   );
 }

@@ -151,7 +151,7 @@ export function DataTable<TData>({
                 Array.from({ length: skeletonRows }).map((_, rowIndex) => (
                   <tr
                     key={`skeleton-${rowIndex}`}
-                    className="transition-colors hover:bg-gray-50/5 dark:hover:bg-hover-bg/50"
+                    className="transition-colors hover:bg-gray-100 dark:hover:bg-hover-bg"
                   >
                     {columns.map((_, colIndex) => (
                       <td
@@ -182,7 +182,7 @@ export function DataTable<TData>({
                 table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-gray-50/5 dark:hover:bg-hover-bg/50"
+                    className="transition-colors hover:bg-gray-100 dark:hover:bg-hover-bg"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td

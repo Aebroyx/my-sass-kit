@@ -17,6 +17,7 @@ type Handlers struct {
 	Role         *handlers.RoleHandler
 	Menu         *handlers.MenuHandler
 	RightsAccess *handlers.RightsAccessHandler
+	Search       *handlers.SearchHandler
 }
 
 // SetupRouter initializes the Gin router with all routes and middleware
@@ -88,4 +89,5 @@ func registerProtectedRoutes(router *gin.RouterGroup, h *Handlers) {
 	RegisterRoleRoutes(router, h.Role)
 	RegisterMenuRoutes(router, h.Menu)
 	RegisterRightsAccessRoutes(router, h.RightsAccess)
+	RegisterSearchRoutes(router, h.Search)
 }
