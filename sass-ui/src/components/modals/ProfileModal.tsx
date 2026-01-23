@@ -17,7 +17,7 @@ export const ProfileModal = ({
     const { user } = useSelector((state: RootState) => state.auth);
   return (
     <Transition.Root show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => setOpen(true)}>
+      <Dialog as="div" className="relative z-50" onClose={() => setOpen(false)}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
