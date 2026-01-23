@@ -397,7 +397,7 @@ function MenuItemComponent({
         )}
         aria-hidden={collapsed}
       >
-        <span className="flex-1 text-left truncate">{menu.name}</span>
+        <span className="flex-1 text-left truncate font-semibold">{menu.name}</span>
         {hasChildren && (
           <ChevronRightIcon
             aria-hidden="true"
