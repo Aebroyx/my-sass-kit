@@ -6,13 +6,13 @@ import { ColumnDef } from '@tanstack/react-table';
 import { EyeIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
-import { Navigation } from '@/components/Navigation';
 import { DataTable, FilterField } from '@/components/ui/DataTable';
 import DeleteModal from '@/components/modals/DeleteModal';
 import { useGetAllRoles, useDeleteRole } from '@/hooks/useRole';
 import { RoleResponse } from '@/services/roleService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
+import { usePermission } from '@/hooks/usePermission';
 
 // Helper function to check if role can be deleted
 const canDeleteRole = (role: RoleResponse): boolean => {
@@ -26,6 +26,9 @@ const canDeleteRole = (role: RoleResponse): boolean => {
 };
 
 export default function RolesManagementPage() {
+  // Check permissions for this page
+  const { can_write: hasWritePermission, can_update: hasUpdatePermission, can_delete: hasDeletePermission } = usePermission();
+
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -160,35 +163,51 @@ export default function RolesManagementPage() {
         id: 'actions',
         header: '',
         cell: ({ row }) => {
-          const canDelete = canDeleteRole(row.original);
-          const tooltipText = !canDelete 
-            ? 'Cannot delete protected role' 
-            : row.original.is_default 
-              ? 'Cannot delete default role' 
-              : 'Delete role';
-          
+          const canDelete = canDeleteRole(row.original) && !row.original.is_default && hasDeletePermission;
+          const deleteTooltipText = !canDeleteRole(row.original)
+            ? 'Cannot delete protected role'
+            : row.original.is_default
+              ? 'Cannot delete default role'
+              : !hasDeletePermission
+                ? 'You do not have permission to delete roles'
+                : 'Delete role';
+
+          const updateTooltipMessage = hasUpdatePermission
+            ? 'Edit role'
+            : 'You do not have permission to edit roles';
+
           return (
             <div className="flex justify-end gap-2">
-              <Link
-                href={`/roles-management/${row.original.id}`}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-                title="Edit role"
-              >
-                <EyeIcon className="h-5 w-5" />
-              </Link>
-              {canDelete && !row.original.is_default ? (
+              {hasUpdatePermission ? (
+                <Link
+                  href={`/roles-management/${row.original.id}`}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
+                  title={updateTooltipMessage}
+                >
+                  <EyeIcon className="h-5 w-5" />
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={updateTooltipMessage}
+                >
+                  <EyeIcon className="h-5 w-5" />
+                </button>
+              )}
+              {canDelete ? (
                 <button
                   onClick={() => openDeleteModal(row.original.id)}
                   className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                  title={tooltipText}
+                  title={deleteTooltipText}
                 >
                   <TrashIcon className="h-5 w-5" />
                 </button>
               ) : (
                 <button
                   disabled
-                  className="rounded-lg p-2 text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                  title={tooltipText}
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={deleteTooltipText}
                 >
                   <TrashIcon className="h-5 w-5" />
                 </button>
@@ -198,7 +217,7 @@ export default function RolesManagementPage() {
         },
       },
     ],
-    []
+    [hasUpdatePermission, hasDeletePermission]
   );
 
   // Define filter fields
@@ -243,16 +262,14 @@ export default function RolesManagementPage() {
 
   if (error) {
     return (
-      <Navigation>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch roles'}
-        </div>
-      </Navigation>
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+        Error: {error instanceof Error ? error.message : 'Failed to fetch roles'}
+      </div>
     );
   }
 
   return (
-    <Navigation>
+    <>
       <DataTable<RoleResponse>
         columns={columns}
         data={data?.data || []}
@@ -281,20 +298,22 @@ export default function RolesManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        addHref="/roles-management/add"
-        addButtonText="Add Role"
+        addHref={hasWritePermission ? "/roles-management/add" : undefined}
+        addButtonText={hasWritePermission ? "Add Role" : undefined}
         // Empty state
         emptyState={
           <div className="py-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               No roles found
             </p>
-            <Link
-              href="/roles-management/add"
-              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
-            >
-              Create your first role
-            </Link>
+            {hasWritePermission && (
+              <Link
+                href="/roles-management/add"
+                className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
+              >
+                Create your first role
+              </Link>
+            )}
           </div>
         }
       />
@@ -311,6 +330,6 @@ export default function RolesManagementPage() {
         confirmText="Delete"
         cancelText="Cancel"
       />
-    </Navigation>
+    </>
   );
 }

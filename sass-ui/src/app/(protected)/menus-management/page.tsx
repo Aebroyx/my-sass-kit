@@ -6,15 +6,24 @@ import { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
-import { Navigation } from '@/components/Navigation';
 import { DataTable, FilterField } from '@/components/ui/DataTable';
 import DeleteModal from '@/components/modals/DeleteModal';
 import { useDeleteMenu, useGetAllMenus } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
+import { usePermission } from '@/hooks/usePermission';
+
+// Business logic: Prevent deletion of core/system menus
+const canDeleteMenu = (menu: MenuResponse): boolean => {
+  // Prevent deletion of core/system menus
+  const protectedPaths = ['/dashboard', '/users-management', '/roles-management', '/menus-management'];
+  return !protectedPaths.includes(menu.path);
+};
 
 export default function MenusManagementPage() {
+  // Check permissions for this page
+  const { can_write: hasWritePermission, can_update: hasUpdatePermission, can_delete: hasDeletePermission } = usePermission();
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -154,27 +163,60 @@ export default function MenusManagementPage() {
       {
         id: 'actions',
         header: '',
-        cell: ({ row }) => (
-          <div className="flex justify-end gap-2">
-            <Link
-              href={`/menus-management/${row.original.id}`}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-              title="Edit menu"
-            >
-              <PencilIcon className="h-5 w-5" />
-            </Link>
-            <button
-              onClick={() => openDeleteModal(row.original.id)}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-              title="Delete menu"
-            >
-              <TrashIcon className="h-5 w-5" />
-            </button>
-          </div>
-        ),
+        cell: ({ row }) => {
+          const canDelete = canDeleteMenu(row.original) && hasDeletePermission;
+          const deleteTooltipMessage = !canDeleteMenu(row.original)
+            ? 'Cannot delete system menu'
+            : !hasDeletePermission
+            ? 'You do not have permission to delete menus'
+            : 'Delete menu';
+
+          const updateTooltipMessage = hasUpdatePermission
+            ? 'Edit menu'
+            : 'You do not have permission to edit menus';
+
+          return (
+            <div className="flex justify-end gap-2">
+              {hasUpdatePermission ? (
+                <Link
+                  href={`/menus-management/${row.original.id}`}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
+                  title={updateTooltipMessage}
+                >
+                  <PencilIcon className="h-5 w-5" />
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={updateTooltipMessage}
+                >
+                  <PencilIcon className="h-5 w-5" />
+                </button>
+              )}
+              {canDelete ? (
+                <button
+                  onClick={() => openDeleteModal(row.original.id)}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                  title={deleteTooltipMessage}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  disabled
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={deleteTooltipMessage}
+                >
+                  <TrashIcon className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+          );
+        },
       },
     ],
-    []
+    [hasUpdatePermission, hasDeletePermission]
   );
 
   // Define filter fields
@@ -210,16 +252,14 @@ export default function MenusManagementPage() {
 
   if (error) {
     return (
-      <Navigation>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch menus'}
-        </div>
-      </Navigation>
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+        Error: {error instanceof Error ? error.message : 'Failed to fetch menus'}
+      </div>
     );
   }
 
   return (
-    <Navigation>
+    <>
       <DataTable<MenuResponse>
         columns={columns}
         data={data?.data || []}
@@ -248,20 +288,22 @@ export default function MenusManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        addHref="/menus-management/add"
-        addButtonText="Add Menu"
+        addHref={hasWritePermission ? "/menus-management/add" : undefined}
+        addButtonText={hasWritePermission ? "Add Menu" : undefined}
         // Empty state
         emptyState={
           <div className="py-6 text-center">
             <p className="text-sm text-gray-500 dark:text-gray-400">
               No menus found
             </p>
-            <Link
-              href="/menus-management/add"
-              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
-            >
-              Add your first menu
-            </Link>
+            {hasWritePermission && (
+              <Link
+                href="/menus-management/add"
+                className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
+              >
+                Add your first menu
+              </Link>
+            )}
           </div>
         }
       />
@@ -278,6 +320,6 @@ export default function MenusManagementPage() {
         confirmText="Delete"
         cancelText="Cancel"
       />
-    </Navigation>
+    </>
   );
 }

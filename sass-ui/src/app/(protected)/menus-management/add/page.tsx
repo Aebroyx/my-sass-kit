@@ -3,17 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useCreateMenu, useGetMenuTree } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
+import { usePermission } from '@/hooks/usePermission';
 import toast from 'react-hot-toast';
 
 export default function AddMenuPage() {
   const router = useRouter();
+  const { can_write: hasWritePermission, isLoading: permissionsLoading } = usePermission('/menus-management');
   const createMenu = useCreateMenu();
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +89,10 @@ export default function AddMenuPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasWritePermission) {
+      toast.error('You do not have permission to create menus');
+      return;
+    }
     if (!validate() || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -109,32 +114,53 @@ export default function AddMenuPage() {
     }
   };
 
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-500 dark:text-gray-400">Loading permissions...</div>
+      </div>
+    );
+  }
+
+  if (!hasWritePermission) {
+    return (
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-400">Permission Denied</h3>
+        <p className="mt-2 text-yellow-700 dark:text-yellow-300">
+          You do not have permission to create menus. Please contact your administrator if you need access.
+        </p>
+        <Link href="/menus-management" className="mt-4 inline-block">
+          <SecondaryButton>Back to Menu Management</SecondaryButton>
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <Navigation>
-      <form onSubmit={handleSubmit}>
-        <FormCard
-          title="Create New Menu"
-          description="Add a new menu item to your application's navigation system."
-          actions={
-            <FormActions>
-              <Link href="/menus-management">
-                <SecondaryButton
-                  type="button"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </SecondaryButton>
-              </Link>
-              <PrimaryButton
-                type="submit"
-                loading={isSubmitting}
+    <form onSubmit={handleSubmit}>
+      <FormCard
+        title="Create New Menu"
+        description="Add a new menu item to your application's navigation system."
+        actions={
+          <FormActions>
+            <Link href="/menus-management">
+              <SecondaryButton
+                type="button"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating...' : 'Create Menu'}
-              </PrimaryButton>
-            </FormActions>
-          }
-        >
+                Cancel
+              </SecondaryButton>
+            </Link>
+            <PrimaryButton
+              type="submit"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Creating...' : 'Create Menu'}
+            </PrimaryButton>
+          </FormActions>
+        }
+      >
           <div className="space-y-8">
             <FormSection
               title="Menu Information"
@@ -222,6 +248,5 @@ export default function AddMenuPage() {
           </div>
         </FormCard>
       </form>
-    </Navigation>
   );
 }

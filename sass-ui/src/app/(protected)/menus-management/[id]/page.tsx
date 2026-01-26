@@ -3,22 +3,20 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useGetMenuById, useUpdateMenu, useGetMenuTree } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { usePermission } from '@/hooks/usePermission';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
 export default function EditMenuPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/menus-management');
   const { data: menu, isLoading, error } = useGetMenuById(params.id);
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const updateMenu = useUpdateMenu();
@@ -116,6 +114,10 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasUpdatePermission) {
+      toast.error('You do not have permission to update menus');
+      return;
+    }
     if (!validate() || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -138,22 +140,27 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (error) {
+  if (permissionsLoading) {
     return (
-      <Navigation>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch menu'}
-        </div>
-      </Navigation>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-500 dark:text-gray-400">Loading permissions...</div>
+      </div>
     );
   }
 
-  const canEdit = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+        Error: {error instanceof Error ? error.message : 'Failed to fetch menu'}
+      </div>
+    );
+  }
+
+  const canEdit = hasUpdatePermission;
   const isDataLoading = isLoading || menusLoading;
 
   return (
-    <Navigation>
-      <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
         <FormCard
           title={isLoading ? 'Loading...' : `Edit Menu: ${menu?.name}`}
           description="Update menu information and settings."
@@ -293,13 +300,12 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
 
               {!canEdit && (
                 <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-                  You don&apos;t have permission to edit this menu.
+                  You do not have permission to edit menus. Please contact your administrator if you need access.
                 </div>
               )}
             </div>
           )}
         </FormCard>
       </form>
-    </Navigation>
   );
 }

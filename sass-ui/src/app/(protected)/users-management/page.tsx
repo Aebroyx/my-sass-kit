@@ -6,13 +6,13 @@ import { ColumnDef } from '@tanstack/react-table';
 import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
-import { Navigation } from '@/components/Navigation';
 import { DataTable, FilterField } from '@/components/ui/DataTable';
 import DeleteModal from '@/components/modals/DeleteModal';
 import { useDeleteUser, useGetAllUsers } from '@/hooks/useUser';
 import { GetUserResponse } from '@/services/userService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
+import { usePermission } from '@/hooks/usePermission';
 
 // Helper function to check if user can be deleted
 const canDeleteUser = (user: GetUserResponse): boolean => {
@@ -25,6 +25,9 @@ const canDeleteUser = (user: GetUserResponse): boolean => {
 };
 
 export default function UsersManagementPage() {
+  // Check permissions for this page
+  const { can_write: hasWritePermission, can_update: hasUpdatePermission, can_delete: hasDeletePermission } = usePermission();
+
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -143,29 +146,49 @@ export default function UsersManagementPage() {
         id: 'actions',
         header: '',
         cell: ({ row }) => {
-          const canDelete = canDeleteUser(row.original);
+          const canDelete = canDeleteUser(row.original) && hasDeletePermission;
+          const deleteTooltipMessage = !canDeleteUser(row.original)
+            ? 'Cannot delete root user'
+            : !hasDeletePermission
+            ? 'You do not have permission to delete users'
+            : 'Delete user';
+
+          const updateTooltipMessage = hasUpdatePermission
+            ? 'View/Edit user'
+            : 'You do not have permission to edit users';
+
           return (
             <div className="flex justify-end gap-2">
-              <Link
-                href={`/users-management/${row.original.id}`}
-                className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
-                title="View user"
-              >
-                <EyeIcon className="h-5 w-5" />
-              </Link>
+              {hasUpdatePermission ? (
+                <Link
+                  href={`/users-management/${row.original.id}`}
+                  className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-primary"
+                  title={updateTooltipMessage}
+                >
+                  <EyeIcon className="h-5 w-5" />
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={updateTooltipMessage}
+                >
+                  <EyeIcon className="h-5 w-5" />
+                </button>
+              )}
               {canDelete ? (
                 <button
                   onClick={() => openDeleteModal(row.original.id)}
                   className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                  title="Delete user"
+                  title={deleteTooltipMessage}
                 >
                   <TrashIcon className="h-5 w-5" />
                 </button>
               ) : (
                 <button
                   disabled
-                  className="rounded-lg p-2 text-gray-300 dark:text-gray-600 cursor-not-allowed"
-                  title="This user cannot be deleted"
+                  className="cursor-not-allowed rounded-lg p-2 text-gray-300 dark:text-gray-600"
+                  title={deleteTooltipMessage}
                 >
                   <TrashIcon className="h-5 w-5" />
                 </button>
@@ -175,7 +198,7 @@ export default function UsersManagementPage() {
         },
       },
     ],
-    []
+    [hasUpdatePermission, hasDeletePermission]
   );
 
   // Define filter fields
@@ -206,15 +229,15 @@ export default function UsersManagementPage() {
   const pageCount = data?.total ? Math.ceil(data.total / pageSize) : 0;
 
   return (
-    <Navigation>
+    <>
       {/* Show error message but don't break the page */}
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
           <p className="font-semibold">Error loading users</p>
-          <p className="text-sm mt-1">{error instanceof Error ? error.message : 'Failed to fetch users'}</p>
+          <p className="mt-1 text-sm">{error instanceof Error ? error.message : 'Failed to fetch users'}</p>
         </div>
       )}
-      
+
       <DataTable<GetUserResponse>
         columns={columns}
         data={data?.data || []}
@@ -243,20 +266,20 @@ export default function UsersManagementPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         // Actions
-        addHref="/users-management/add"
-        addButtonText="Add User"
+        addHref={hasWritePermission ? "/users-management/add" : undefined}
+        addButtonText={hasWritePermission ? "Add User" : undefined}
         // Empty state
         emptyState={
           <div className="py-6 text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              No users found
-            </p>
-            <Link
-              href="/users-management/add"
-              className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
-            >
-              Add your first user
-            </Link>
+            <p className="text-sm text-gray-500 dark:text-gray-400">No users found</p>
+            {hasWritePermission && (
+              <Link
+                href="/users-management/add"
+                className="mt-2 inline-block text-sm font-medium text-primary hover:text-primary-dark"
+              >
+                Add your first user
+              </Link>
+            )}
           </div>
         }
       />
@@ -273,6 +296,6 @@ export default function UsersManagementPage() {
         confirmText="Delete"
         cancelText="Cancel"
       />
-    </Navigation>
+    </>
   );
 }
