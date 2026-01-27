@@ -21,8 +21,18 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: 'The Blade App',
   description: 'Point of Sale Application',
+  manifest: '/site.webmanifest',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png', type: 'image/png', sizes: '96x96' },
+    ],
+    shortcut: ['/favicon.ico'],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
+  appleWebApp: {
+    title: 'sass-kit',
   },
 };
 

@@ -79,40 +79,37 @@ export const SettingsModal = ({
                     </div>
                     
                     <div className="rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-background p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-card-bg border border-gray-200 dark:border-border-dark">
-                            {theme === 'dark' ? (
-                              <MoonIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                            ) : (
-                              <SunIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {theme === 'dark' 
-                                ? 'Switch to light mode for a brighter experience' 
-                                : 'Switch to dark mode for reduced eye strain'}
-                            </p>
-                          </div>
-                        </div>
+                      <div className="flex items-center gap-2 p-1 bg-white dark:bg-card-bg rounded-lg border border-gray-200 dark:border-border-dark">
                         <button
                           type="button"
-                          onClick={toggleTheme}
-                          className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-card-bg"
-                          role="switch"
-                          aria-checked={theme === 'dark'}
+                          onClick={() => theme === 'dark' && toggleTheme()}
+                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all duration-200 ${
+                            theme === 'light'
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-hover-bg'
+                          }`}
                         >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                              theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
-                            }`}
-                          />
+                          <SunIcon className="w-5 h-5" />
+                          <span className="text-sm font-medium">Light</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => theme === 'light' && toggleTheme()}
+                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all duration-200 ${
+                            theme === 'dark'
+                              ? 'bg-primary text-white shadow-sm'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-hover-bg'
+                          }`}
+                        >
+                          <MoonIcon className="w-5 h-5" />
+                          <span className="text-sm font-medium">Dark</span>
                         </button>
                       </div>
+                      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                        {theme === 'dark'
+                          ? 'Dark mode is enabled for reduced eye strain'
+                          : 'Light mode is enabled for a brighter experience'}
+                      </p>
                     </div>
                   </div>
 
