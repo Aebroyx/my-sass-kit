@@ -79,36 +79,49 @@ export const SettingsModal = ({
                     </div>
                     
                     <div className="rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-background p-4">
-                      <div className="flex items-center gap-2 p-1 bg-white dark:bg-card-bg rounded-lg border border-gray-200 dark:border-border-dark">
-                        <button
-                          type="button"
-                          onClick={() => theme === 'dark' && toggleTheme()}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all duration-200 ${
+                      <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="w-full flex items-center justify-between p-4 bg-white dark:bg-card-bg rounded-lg border border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-hover-bg transition-all duration-200 group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ${
                             theme === 'light'
-                              ? 'bg-primary text-white shadow-sm'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-hover-bg'
-                          }`}
-                        >
-                          <SunIcon className="w-5 h-5" />
-                          <span className="text-sm font-medium">Light</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => theme === 'light' && toggleTheme()}
-                          className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all duration-200 ${
-                            theme === 'dark'
-                              ? 'bg-primary text-white shadow-sm'
-                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-hover-bg'
-                          }`}
-                        >
+                              ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-500'
+                              : 'bg-gray-100 dark:bg-background text-gray-400'
+                          }`}>
+                            <SunIcon className="w-5 h-5" />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-medium transition-colors ${
+                              theme === 'light'
+                                ? 'text-gray-900 dark:text-gray-100'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              Light
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-500">/</span>
+                            <span className={`text-sm font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'text-gray-900 dark:text-gray-100'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              Dark
+                            </span>
+                          </div>
+                        </div>
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ${
+                          theme === 'dark'
+                            ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-500'
+                            : 'bg-gray-100 dark:bg-background text-gray-400'
+                        }`}>
                           <MoonIcon className="w-5 h-5" />
-                          <span className="text-sm font-medium">Dark</span>
-                        </button>
-                      </div>
+                        </div>
+                      </button>
                       <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
                         {theme === 'dark'
-                          ? 'Dark mode is enabled for reduced eye strain'
-                          : 'Light mode is enabled for a brighter experience'}
+                          ? 'Click to switch to light mode'
+                          : 'Click to switch to dark mode'}
                       </p>
                     </div>
                   </div>
