@@ -53,5 +53,4 @@ var WhitelistedRoutes = map[string]bool{
 	"GET:/api/menus/user":   true,
 	"GET:/api/menus/tree":   true,
 	"GET:/api/roles/active": true,
-	"GET:/api/search/":      true,
 }

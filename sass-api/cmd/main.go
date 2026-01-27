@@ -44,8 +44,8 @@ func main() {
 	roleService := services.NewRoleService(db.DB, cfg)
 	menuService := services.NewMenuService(db.DB, cfg)
 	rightsAccessService := services.NewRightsAccessService(db.DB, cfg)
-	searchService := services.NewSearchService(db.DB, cfg)
 	permissionService := services.NewPermissionService(db.DB, cfg, menuService)
+	searchService := services.NewSearchService(db.DB, cfg, permissionService)
 
 	// Initialize handlers
 	h := &routes.Handlers{
