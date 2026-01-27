@@ -349,9 +349,9 @@ function MenuItemComponent({
   const IconComponent = getIconComponent(menu.icon);
 
   // Check if current path matches this menu or any of its children
-  const isActive = pathname === menu.path;
+  const isActive = pathname === menu.path || (menu.path && pathname.startsWith(menu.path + '/'));
   const isChildActive = hasChildren && menu.children?.some(child =>
-    pathname === child.path || pathname.startsWith(child.path + '/')
+    pathname === child.path || (child.path && pathname.startsWith(child.path + '/'))
   );
 
   const handleClick = () => {
