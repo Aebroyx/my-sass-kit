@@ -24,4 +24,22 @@ export const handleApiError = (error: unknown): never => {
   throw error;
 };
 
+// Helper function to extract user-friendly error message from API error
+export const getErrorMessage = (error: Error, fallback: string): string => {
+  try {
+    const errorResponse = JSON.parse(error.message);
+
+    // Check if it's a structured API error response
+    if (errorResponse.status === 'error' && errorResponse.message) {
+      return errorResponse.message;
+    }
+
+    // Fallback to original message if not a structured error
+    return error.message || fallback;
+  } catch {
+    // If JSON parsing fails, return the original message or fallback
+    return error.message || fallback;
+  }
+};
+
 export default axiosInstance;

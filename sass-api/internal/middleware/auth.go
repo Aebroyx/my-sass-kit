@@ -32,16 +32,17 @@ func Auth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 
 		// Parse and validate token
 		claims := &models.Claims{}
-		token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(accessToken, claims, func(token *jwt.Token) (any, error) {
 			return []byte(jwtSecret), nil
 		})
 
 		if err != nil {
-			if err == jwt.ErrSignatureInvalid {
+			switch err {
+			case jwt.ErrSignatureInvalid:
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token signature"})
-			} else if err == jwt.ErrTokenExpired {
+			case jwt.ErrTokenExpired:
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Token has expired"})
-			} else {
+			default:
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 			}
 			c.Abort()

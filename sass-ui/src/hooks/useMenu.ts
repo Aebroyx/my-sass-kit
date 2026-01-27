@@ -7,6 +7,7 @@ import {
   UpdateMenuRequest,
   MenuWithPermissions,
 } from '@/services/menuService';
+import { getErrorMessage } from '@/lib/axios';
 import toast from 'react-hot-toast';
 
 // Query keys
@@ -71,7 +72,7 @@ export function useBulkSaveUserRightsAccess() {
       toast.success('Permissions saved successfully');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to save permissions');
+      toast.error(getErrorMessage(error, 'Failed to save permissions'));
     },
   });
 }
@@ -87,7 +88,7 @@ export function useDeleteAllUserRightsAccess() {
       toast.success('All custom permissions removed');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete permissions');
+      toast.error(getErrorMessage(error, 'Failed to delete permissions'));
     },
   });
 }
@@ -121,7 +122,7 @@ export function useCreateMenu() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create menu');
+      toast.error(getErrorMessage(error, 'Failed to create menu'));
     },
   });
 }
@@ -138,7 +139,7 @@ export function useUpdateMenu() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update menu');
+      toast.error(getErrorMessage(error, 'Failed to update menu'));
     },
   });
 }
@@ -154,7 +155,7 @@ export function useDeleteMenu() {
       toast.success('Menu deleted successfully');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to delete menu');
+      toast.error(getErrorMessage(error, 'Failed to delete menu'));
     },
   });
 }

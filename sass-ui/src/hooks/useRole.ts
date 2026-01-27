@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { roleService, GetAllRolesParams, CreateRoleRequest, UpdateRoleRequest, RoleMenuPermission } from '@/services/roleService';
+import { getErrorMessage } from '@/lib/axios';
 import toast from 'react-hot-toast';
 
 // Query keys
@@ -50,8 +51,7 @@ export function useCreateRole() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      const errorMessage = error.message || 'Failed to create role';
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error, 'Failed to create role'));
     },
   });
 }
@@ -68,8 +68,7 @@ export function useUpdateRole() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      const errorMessage = error.message || 'Failed to update role';
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error, 'Failed to update role'));
     },
   });
 }
@@ -85,8 +84,7 @@ export function useDeleteRole() {
       toast.success('Role deleted successfully');
     },
     onError: (error: Error) => {
-      const errorMessage = error.message || 'Failed to delete role';
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error, 'Failed to delete role'));
     },
   });
 }
@@ -103,8 +101,7 @@ export function useBulkAssignMenusToRole() {
       toast.success('Menu permissions saved successfully');
     },
     onError: (error: Error) => {
-      const errorMessage = error.message || 'Failed to save menu permissions';
-      toast.error(errorMessage);
+      toast.error(getErrorMessage(error, 'Failed to save menu permissions'));
     },
   });
 }
