@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
@@ -12,13 +11,12 @@ import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
 import { useCreateUser } from '@/hooks/useUser';
 import { useGetActiveRoles } from '@/hooks/useRole';
 import { useGetMenuTree, useGetRoleMenus, useBulkSaveUserRightsAccess } from '@/hooks/useMenu';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { usePermission } from '@/hooks/usePermission';
 import toast from 'react-hot-toast';
 
 export default function AddUserPage() {
   const router = useRouter();
-  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const { can_write: hasWritePermission, isLoading: permissionsLoading } = usePermission('/users-management');
   const createUser = useCreateUser();
   const bulkSaveRightsAccess = useBulkSaveUserRightsAccess();
   const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
@@ -83,6 +81,10 @@ export default function AddUserPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasWritePermission) {
+      toast.error('You do not have permission to create users');
+      return;
+    }
     if (!validate() || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -138,17 +140,29 @@ export default function AddUserPage() {
 
   const isLoading = rolesLoading || menusLoading;
 
-  // Check if user has permission to create users
-  // Role-based check: root or admin roles have full access
-  const canCreate = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
+  if (permissionsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-500 dark:text-gray-400">Loading permissions...</div>
+      </div>
+    );
+  }
+
+  if (!hasWritePermission) {
+    return (
+      <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-6 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-400">Permission Denied</h3>
+        <p className="mt-2 text-yellow-700 dark:text-yellow-300">
+          You do not have permission to create users. Please contact your administrator if you need access.
+        </p>
+        <Link href="/users-management" className="mt-4 inline-block">
+          <SecondaryButton>Back to Users Management</SecondaryButton>
+        </Link>
+      </div>
+    );
+  }
 
   return (
-    <Navigation>
-      {!canCreate ? (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-          You don&apos;t have permission to create users.
-        </div>
-      ) : (
         <form onSubmit={handleSubmit}>
           <FormCard
             title="Create New User"
@@ -268,7 +282,5 @@ export default function AddUserPage() {
           </div>
         </FormCard>
       </form>
-      )}
-    </Navigation>
   );
 }

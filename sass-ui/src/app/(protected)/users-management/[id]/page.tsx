@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Navigation } from '@/components/Navigation';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
@@ -17,15 +16,14 @@ import {
   useGetUserRightsAccess,
   useBulkSaveUserRightsAccess,
 } from '@/hooks/useMenu';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { usePermission } from '@/hooks/usePermission';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
 export default function EditUserPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { user: currentUser } = useSelector((state: RootState) => state.auth);
+  const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/users-management');
   const { data: user, isLoading, error } = useGetUserById(params.id);
   const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
@@ -108,6 +106,10 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasUpdatePermission) {
+      toast.error('You do not have permission to update users');
+      return;
+    }
     if (!validate() || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -155,30 +157,28 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     }
   };
 
-  if (error) {
+  if (permissionsLoading) {
     return (
-      <Navigation>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-          Error: {error instanceof Error ? error.message : 'Failed to fetch user'}
-        </div>
-      </Navigation>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-500 dark:text-gray-400">Loading permissions...</div>
+      </div>
     );
   }
 
-  // Check if user has permission to edit
-  // 1. Role-based check: root or admin roles have full access
-  const isRootOrAdmin = currentUser?.role?.name === 'root' || currentUser?.role?.name === 'admin';
+  if (error) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+        Error: {error instanceof Error ? error.message : 'Failed to fetch user'}
+      </div>
+    );
+  }
 
-  // 2. Permission-based check: user has explicit UPDATE permission on users-management menu
-  // Note: This checks the current user's permissions, not the user being edited
-  // For now, we'll just use role-based check until we fetch current user's permissions
-  const canEdit = isRootOrAdmin;
-
+  const canEdit = hasUpdatePermission;
   const isDataLoading = isLoading || menusLoading || rolesLoading;
   const isPermissionsLoading = roleMenusLoading || rightsLoading;
 
   return (
-    <Navigation>
+    <>
       <form onSubmit={handleSubmit}>
         <FormCard
           title={isLoading ? 'Loading...' : `Edit User: ${user?.name}`}
@@ -334,6 +334,6 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
           )}
         </FormCard>
       </form>
-    </Navigation>
+    </>
   );
 }

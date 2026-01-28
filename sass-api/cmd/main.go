@@ -44,7 +44,8 @@ func main() {
 	roleService := services.NewRoleService(db.DB, cfg)
 	menuService := services.NewMenuService(db.DB, cfg)
 	rightsAccessService := services.NewRightsAccessService(db.DB, cfg)
-	searchService := services.NewSearchService(db.DB, cfg)
+	permissionService := services.NewPermissionService(db.DB, cfg, menuService)
+	searchService := services.NewSearchService(db.DB, cfg, permissionService)
 
 	// Initialize handlers
 	h := &routes.Handlers{
@@ -56,8 +57,13 @@ func main() {
 		Search:       handlers.NewSearchHandler(searchService),
 	}
 
+	// Initialize services struct for router
+	svc := &routes.Services{
+		Permission: permissionService,
+	}
+
 	// Setup router
-	router := routes.SetupRouter(cfg, db.DB, h)
+	router := routes.SetupRouter(cfg, db.DB, h, svc)
 
 	// Create HTTP server with graceful shutdown support
 	srv := &http.Server{

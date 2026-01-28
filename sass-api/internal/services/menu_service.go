@@ -204,10 +204,65 @@ func (s *MenuService) GetUserMenus(userID uint, roleID uint) ([]models.MenuWithP
 		}
 	}
 
-	// Convert map to slice
+	// Add menus that have user overrides granting read access, even if not in role
+	// This allows users to see menus they have explicit read permission for via overrides
+	for _, override := range rightsAccess {
+		// Only include if menu is not already in map and override explicitly grants read access
+		if _, exists := menuMap[override.MenuID]; !exists && override.CanRead != nil && *override.CanRead {
+			// Fetch the menu details
+			var menu models.Menu
+			if err := s.db.First(&menu, override.MenuID).Error; err != nil {
+				continue // Skip if menu doesn't exist
+			}
+
+			if !menu.IsActive {
+				continue // Skip inactive menus
+			}
+
+			// Build permissions from override (only non-nil values are set)
+			permissions := models.EffectivePermissions{
+				CanRead:   false, // Default to false, will be set by override
+				CanWrite:  false,
+				CanUpdate: false,
+				CanDelete: false,
+			}
+
+			if override.CanRead != nil {
+				permissions.CanRead = *override.CanRead
+			}
+			if override.CanWrite != nil {
+				permissions.CanWrite = *override.CanWrite
+			}
+			if override.CanUpdate != nil {
+				permissions.CanUpdate = *override.CanUpdate
+			}
+			if override.CanDelete != nil {
+				permissions.CanDelete = *override.CanDelete
+			}
+
+			// Only add if canRead is true (explicit grant)
+			if permissions.CanRead {
+				menuMap[override.MenuID] = models.MenuWithPermissions{
+					ID:          menu.ID,
+					Name:        menu.Name,
+					Path:        menu.Path,
+					Icon:        menu.Icon,
+					OrderIndex:  menu.OrderIndex,
+					ParentID:    menu.ParentID,
+					IsActive:    menu.IsActive,
+					Permissions: permissions,
+				}
+			}
+		}
+	}
+
+	// Convert map to slice and filter out menus without read permission
 	result := make([]models.MenuWithPermissions, 0, len(menuMap))
 	for _, menu := range menuMap {
-		result = append(result, menu)
+		// Only include menus where user has read permission
+		if menu.Permissions.CanRead {
+			result = append(result, menu)
+		}
 	}
 
 	// Sort by order_index

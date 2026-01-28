@@ -79,40 +79,50 @@ export const SettingsModal = ({
                     </div>
                     
                     <div className="rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-background p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-white dark:bg-card-bg border border-gray-200 dark:border-border-dark">
-                            {theme === 'dark' ? (
-                              <MoonIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                            ) : (
-                              <SunIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                            )}
+                      <button
+                        type="button"
+                        onClick={toggleTheme}
+                        className="w-full flex items-center justify-between p-4 bg-white dark:bg-card-bg rounded-lg border border-gray-200 dark:border-border-dark hover:bg-gray-50 dark:hover:bg-hover-bg transition-all duration-200 group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ${
+                            theme === 'light'
+                              ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-500'
+                              : 'bg-gray-100 dark:bg-background text-gray-400'
+                          }`}>
+                            <SunIcon className="w-5 h-5" />
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {theme === 'dark' 
-                                ? 'Switch to light mode for a brighter experience' 
-                                : 'Switch to dark mode for reduced eye strain'}
-                            </p>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-medium transition-colors ${
+                              theme === 'light'
+                                ? 'text-gray-900 dark:text-gray-100'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              Light
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-500">/</span>
+                            <span className={`text-sm font-medium transition-colors ${
+                              theme === 'dark'
+                                ? 'text-gray-900 dark:text-gray-100'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              Dark
+                            </span>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={toggleTheme}
-                          className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-primary transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-card-bg"
-                          role="switch"
-                          aria-checked={theme === 'dark'}
-                        >
-                          <span
-                            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                              theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
-                            }`}
-                          />
-                        </button>
-                      </div>
+                        <div className={`flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200 ${
+                          theme === 'dark'
+                            ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-500'
+                            : 'bg-gray-100 dark:bg-background text-gray-400'
+                        }`}>
+                          <MoonIcon className="w-5 h-5" />
+                        </div>
+                      </button>
+                      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                        {theme === 'dark'
+                          ? 'Click to switch to light mode'
+                          : 'Click to switch to dark mode'}
+                      </p>
                     </div>
                   </div>
 

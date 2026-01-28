@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { userService, GetUserResponse, GetAllUsersParams, PaginatedResponse } from '@/services/userService';
+import { getErrorMessage } from '@/lib/axios';
 import toast from 'react-hot-toast';
 
 // Create User Mutation
@@ -14,16 +15,7 @@ export function useCreateUser() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      try {
-        const errorResponse = JSON.parse(error.message);
-        if (errorResponse.status === 'error' && errorResponse.message) {
-          toast.error(errorResponse.message);
-        } else {
-          toast.error('Failed to create user');
-        }
-      } catch {
-        toast.error('Failed to create user');
-      }
+      toast.error(getErrorMessage(error, 'Failed to create user'));
     },
   });
 }
@@ -76,16 +68,7 @@ export function useUpdateUser() {
       // Note: Toast and redirect handled by the calling component
     },
     onError: (error: Error) => {
-      try {
-        const errorResponse = JSON.parse(error.message);
-        if (errorResponse.status === 'error' && errorResponse.message) {
-          toast.error(errorResponse.message);
-        } else {
-          toast.error('Failed to update user');
-        }
-      } catch {
-        toast.error('Failed to update user');
-      }
+      toast.error(getErrorMessage(error, 'Failed to update user'));
     },
   });
 }
@@ -101,16 +84,7 @@ export function useDeleteUser() {
       toast.success('User deleted successfully');
     },
     onError: (error: Error) => {
-      try {
-        const errorResponse = JSON.parse(error.message);
-        if (errorResponse.status === 'error' && errorResponse.message) {
-          toast.error(errorResponse.message);
-        } else {
-          toast.error('Failed to delete user');
-        }
-      } catch {
-        toast.error('Failed to delete user');
-      }
+      toast.error(getErrorMessage(error, 'Failed to delete user'));
     },
   });
 }
@@ -126,16 +100,7 @@ export function useSoftDeleteUser() {
       toast.success('User soft deleted successfully');
     },
     onError: (error: Error) => {
-      try {
-        const errorResponse = JSON.parse(error.message);
-        if (errorResponse.status === 'error' && errorResponse.message) {
-          toast.error(errorResponse.message);
-        } else {
-          toast.error('Failed to soft delete user');
-        }
-      } catch {
-        toast.error('Failed to soft delete user');
-      }
+      toast.error(getErrorMessage(error, 'Failed to soft delete user'));
     },
   });
 }

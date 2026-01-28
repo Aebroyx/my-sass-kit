@@ -6,6 +6,7 @@ import (
 	"github.com/Aebroyx/sass-api/internal/config"
 	"github.com/Aebroyx/sass-api/internal/handlers"
 	"github.com/Aebroyx/sass-api/internal/middleware"
+	"github.com/Aebroyx/sass-api/internal/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -20,8 +21,13 @@ type Handlers struct {
 	Search       *handlers.SearchHandler
 }
 
+// Services holds all service instances needed by the router
+type Services struct {
+	Permission *services.PermissionService
+}
+
 // SetupRouter initializes the Gin router with all routes and middleware
-func SetupRouter(cfg *config.Config, db *gorm.DB, h *Handlers) *gin.Engine {
+func SetupRouter(cfg *config.Config, db *gorm.DB, h *Handlers, svc *Services) *gin.Engine {
 	router := gin.New()
 
 	// Add logger middleware
@@ -42,6 +48,7 @@ func SetupRouter(cfg *config.Config, db *gorm.DB, h *Handlers) *gin.Engine {
 	// Register protected routes
 	protected := api.Group("")
 	protected.Use(middleware.Auth(cfg.JWTSecret, db))
+	protected.Use(middleware.Permission(svc.Permission))
 	registerProtectedRoutes(protected, h)
 
 	return router

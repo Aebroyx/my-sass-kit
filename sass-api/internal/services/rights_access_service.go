@@ -224,9 +224,11 @@ func (s *RightsAccessService) BulkSaveUserRightsAccess(userID uint, req *models.
 		}
 	}()
 
-	// Step 2: Delete ALL existing rights access for this user
-	// This simplifies the logic and avoids duplicate key issues
-	if err := tx.Where("user_id = ?", userID).Delete(&models.RightsAccess{}).Error; err != nil {
+	// Step 2: Delete ALL existing rights access for this user (hard delete)
+	// Use Unscoped() to perform a hard delete instead of soft delete
+	// This is necessary because the unique constraint idx_user_menu_rights
+	// doesn't exclude soft-deleted records, causing duplicate key violations
+	if err := tx.Unscoped().Where("user_id = ?", userID).Delete(&models.RightsAccess{}).Error; err != nil {
 		tx.Rollback()
 		return nil, err
 	}
