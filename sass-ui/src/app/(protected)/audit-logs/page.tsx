@@ -249,6 +249,8 @@ export default function AuditLogsPage() {
           setPage(1);
         }}
         onSearch={handleSearch}
+        sortBy={sortBy}
+        sortDesc={sortDesc}
         onSortChange={handleSortChange}
         searchPlaceholder="Search by username..."
         filterFields={filterFields}
