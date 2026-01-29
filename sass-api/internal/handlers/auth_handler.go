@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Aebroyx/sass-api/internal/common"
 	"github.com/Aebroyx/sass-api/internal/domain/models"
 	"github.com/Aebroyx/sass-api/internal/services"
 
@@ -79,9 +80,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 		switch err.Error() {
 		case "invalid username or password":
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid username or password"})
+			common.SendError(c, http.StatusBadRequest, "Invalid username or password", common.CodeBadRequest, nil)
 		default:
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			common.SendError(c, http.StatusInternalServerError, "Internal server error", common.CodeInternalError, nil)
 		}
 		return
 	}
