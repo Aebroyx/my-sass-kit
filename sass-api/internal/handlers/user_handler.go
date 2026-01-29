@@ -131,3 +131,32 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 
 	common.SendSuccess(c, http.StatusOK, "User deleted successfully", user)
 }
+
+func (h *UserHandler) ResetUserPassword(c *gin.Context) {
+	userID := c.Param("id")
+	var req models.ResetUserPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		common.SendError(c, http.StatusBadRequest, "Invalid request body", common.CodeInvalidRequest, err.Error())
+		return
+	}
+
+	// Validate request
+	if err := h.validate.Struct(req); err != nil {
+		common.SendError(c, http.StatusBadRequest, "Validation failed", common.CodeValidationError, err.Error())
+		return
+	}
+
+	user, err := h.userService.ResetUserPassword(userID, &req)
+	if err != nil {
+		switch err.Error() {
+		case "invalid current password":
+			common.SendError(c, http.StatusBadRequest, "Invalid current password", common.CodeBadRequest, nil)
+		case "new password and confirm password do not match":
+			common.SendError(c, http.StatusBadRequest, "New password and confirm password do not match", common.CodeValidationError, nil)
+		default:
+			common.SendError(c, http.StatusInternalServerError, "Internal server error", common.CodeInternalError, nil)
+		}
+		return
+	}
+	common.SendSuccess(c, http.StatusOK, "User password reset successfully", user)
+}

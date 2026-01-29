@@ -2,6 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon, ChevronDoubleLeftIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import { DataTablePaginationProps } from './types';
+import Select, { type SelectOption } from '../Select';
 
 const PAGE_SIZES = [5, 10, 20, 50, 100];
 
@@ -71,21 +72,21 @@ export function DataTablePagination({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
         {/* Page size selector */}
         <div className="flex items-center gap-2">
-          <label htmlFor="pageSize" className="text-sm text-gray-700 dark:text-gray-300">
+          <label className="text-sm text-gray-700 dark:text-gray-300">
             Rows per page:
           </label>
-          <select
-            id="pageSize"
-            value={pageSize}
-            onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary dark:border-border-dark dark:bg-input-bg dark:text-white"
-          >
-            {PAGE_SIZES.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+          <Select
+            label="Rows per page"
+            hideLabel
+            name="pageSize"
+            options={PAGE_SIZES.map(
+              (size): SelectOption => ({ value: String(size), label: String(size) })
+            )}
+            value={String(pageSize)}
+            onChange={(value) => onPageSizeChange(Number(value))}
+            size="sm"
+            className="min-w-[5.5rem]"
+          />
         </div>
 
         {/* Page navigation */}

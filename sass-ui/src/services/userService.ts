@@ -79,6 +79,12 @@ interface UpdateUserRequest {
   password: string;
 }
 
+interface ResetPasswordRequest {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
+
 // Response represents the standard API response structure
 interface ApiResponse<T> {
   status: string;
@@ -232,8 +238,17 @@ class UserService {
       throw handleApiError(error);
     }
   }
+
+  async resetPassword(id: string | number, data: ResetPasswordRequest): Promise<GetUserResponse> {
+    try {
+      const response = await axiosInstance.post<ApiResponse<GetUserResponse>>(`/user/reset-password/${id}`, data);
+      return response.data.data;
+    } catch (error) {
+      throw handleApiError(error);
+    }
+  }
   
 }
 
 export const userService = new UserService();
-export type { GetUserResponse, RegisterRequest, RegisterResponse, LoginRequest, TokenResponse, LoginResponse };
+export type { GetUserResponse, RegisterRequest, RegisterResponse, LoginRequest, TokenResponse, LoginResponse, ResetPasswordRequest };

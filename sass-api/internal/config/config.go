@@ -24,14 +24,21 @@ type Config struct {
 	DBAutoMigrate bool
 
 	// JWT config
-	JWTSecret string
-	JWTExpiry time.Duration
+	JWTSecret          string
+	JWTExpiry          time.Duration
+	RefreshTokenExpiry time.Duration
 
 	// CORS config
 	CORSAllowedOrigins string
 
 	// Logging
 	LogLevel string
+
+	// Rate Limiting
+	RateLimitEnabled   bool
+	RateLimitPerIP     int
+	RateLimitPerUser   int
+	RateLimitWindow    time.Duration
 }
 
 // Load loads the configuration from environment variables
@@ -45,6 +52,18 @@ func Load() (*Config, error) {
 	jwtExpiry, err := time.ParseDuration(getEnv("JWT_EXPIRY", "24h"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid JWT_EXPIRY format: %v", err)
+	}
+
+	// Parse refresh token expiry duration
+	refreshTokenExpiry, err := time.ParseDuration(getEnv("REFRESH_TOKEN_EXPIRY", "168h"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REFRESH_TOKEN_EXPIRY format: %v", err)
+	}
+
+	// Parse rate limit window duration
+	rateLimitWindow, err := time.ParseDuration(getEnv("RATE_LIMIT_WINDOW", "1h"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid RATE_LIMIT_WINDOW format: %v", err)
 	}
 
 	return &Config{
@@ -63,14 +82,21 @@ func Load() (*Config, error) {
 		DBAutoMigrate: getEnv("DB_AUTO_MIGRATE", "true") == "true",
 
 		// JWT config
-		JWTSecret: getEnv("JWT_SECRET", ""),
-		JWTExpiry: jwtExpiry,
+		JWTSecret:          getEnv("JWT_SECRET", ""),
+		JWTExpiry:          jwtExpiry,
+		RefreshTokenExpiry: refreshTokenExpiry,
 
 		// CORS config
 		CORSAllowedOrigins: getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000"),
 
 		// Logging
 		LogLevel: getEnv("LOG_LEVEL", "debug"),
+
+		// Rate Limiting
+		RateLimitEnabled: getEnv("RATE_LIMIT_ENABLED", "true") == "true",
+		RateLimitPerIP:   getEnvInt("RATE_LIMIT_PER_IP", 100),
+		RateLimitPerUser: getEnvInt("RATE_LIMIT_PER_USER", 1000),
+		RateLimitWindow:  rateLimitWindow,
 	}, nil
 }
 
@@ -78,6 +104,17 @@ func Load() (*Config, error) {
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
+	}
+	return defaultValue
+}
+
+// getEnvInt gets an environment variable as int or returns a default value
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		var intValue int
+		if _, err := fmt.Sscanf(value, "%d", &intValue); err == nil {
+			return intValue
+		}
 	}
 	return defaultValue
 }

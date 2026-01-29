@@ -10,6 +10,7 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
+import { getErrorMessage } from '@/lib/axios';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function LoginPage() {
       router.push('/');
     } catch (err) {
       // Show error message
-      toast.error(err instanceof Error ? err.message : 'Failed to login');
+      toast.error(getErrorMessage(err as Error, 'Failed to login'));
     } finally {
       setIsLoading(false);
     }

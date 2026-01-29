@@ -19,11 +19,15 @@ type Handlers struct {
 	Menu         *handlers.MenuHandler
 	RightsAccess *handlers.RightsAccessHandler
 	Search       *handlers.SearchHandler
+	Token        *handlers.TokenHandler
+	Audit        *handlers.AuditHandler
 }
 
 // Services holds all service instances needed by the router
 type Services struct {
-	Permission *services.PermissionService
+	Permission  *services.PermissionService
+	Audit       *services.AuditService
+	RateLimiter *services.RateLimiterService
 }
 
 // SetupRouter initializes the Gin router with all routes and middleware
@@ -36,19 +40,24 @@ func SetupRouter(cfg *config.Config, db *gorm.DB, h *Handlers, svc *Services) *g
 	// Add recovery middleware
 	router.Use(gin.Recovery())
 
+	// Add correlation ID middleware
+	router.Use(middleware.CorrelationID())
+
 	// Add CORS middleware
 	router.Use(corsMiddleware(cfg))
 
 	// API group
 	api := router.Group("/api")
 
-	// Register public routes
-	registerPublicRoutes(api, h)
+	// Register public routes with rate limiting
+	registerPublicRoutes(api, h, svc)
 
 	// Register protected routes
 	protected := api.Group("")
 	protected.Use(middleware.Auth(cfg.JWTSecret, db))
+	protected.Use(middleware.RateLimitByUser(svc.RateLimiter))
 	protected.Use(middleware.Permission(svc.Permission))
+	protected.Use(middleware.AuditLogger(svc.Audit))
 	registerProtectedRoutes(protected, h)
 
 	return router
@@ -85,13 +94,23 @@ func corsMiddleware(cfg *config.Config) gin.HandlerFunc {
 }
 
 // registerPublicRoutes registers all public routes (no authentication required)
-func registerPublicRoutes(router *gin.RouterGroup, h *Handlers) {
-	RegisterAuthPublicRoutes(router, h.Auth)
+func registerPublicRoutes(router *gin.RouterGroup, h *Handlers, svc *Services) {
+	// Auth routes with rate limiting
+	authGroup := router.Group("/auth")
+	authGroup.Use(middleware.RateLimitByIP(svc.RateLimiter))
+	{
+		// Public auth endpoints
+		authGroup.POST("/register", h.Auth.Register)
+		authGroup.POST("/login", h.Auth.Login)
+		authGroup.POST("/refresh-token", h.Token.RefreshToken)
+	}
 }
 
 // registerProtectedRoutes registers all protected routes (authentication required)
 func registerProtectedRoutes(router *gin.RouterGroup, h *Handlers) {
 	RegisterAuthProtectedRoutes(router, h.Auth)
+	RegisterTokenRoutes(router, h.Token)
+	RegisterAuditRoutes(router, h.Audit)
 	RegisterUserRoutes(router, h.User)
 	RegisterRoleRoutes(router, h.Role)
 	RegisterMenuRoutes(router, h.Menu)

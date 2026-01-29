@@ -98,3 +98,9 @@ type UpdateUserRequest struct {
 	RoleID   uint   `json:"role_id" validate:"required,min=1"`
 	Password string `json:"password,omitempty" validate:"omitempty,min=6"`
 }
+
+type ResetUserPasswordRequest struct {
+	CurrentPassword string `json:"current_password" validate:"required,min=6"`
+	NewPassword     string `json:"new_password" validate:"required,min=6"`
+	ConfirmPassword string `json:"confirm_password" validate:"required,min=6"`
+}
