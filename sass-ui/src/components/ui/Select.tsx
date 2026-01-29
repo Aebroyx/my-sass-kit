@@ -23,6 +23,7 @@ interface SelectProps {
   className?: string;
   name?: string;
   hideLabel?: boolean;
+  size?: 'sm' | 'md';
 }
 
 // Custom dropdown indicator with Heroicon
@@ -49,17 +50,20 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       className = '',
       name,
       hideLabel = false,
+      size = 'md',
     },
     ref
   ) => {
     const selectedOption = options.find((option) => option.value === value) || null;
     const selectId = name || label.replace(/\s+/g, '-').toLowerCase();
 
+    const isSmall = size === 'sm';
+
     // Custom styles for react-select to match your design system
     const customStyles: StylesConfig<SelectOption, false> = {
       control: (base, state) => ({
         ...base,
-        minHeight: '38px',
+        minHeight: isSmall ? '30px' : '38px',
         borderRadius: '0.375rem', // rounded-md
         borderColor: error
           ? 'rgb(252 165 165)' // red-300
@@ -86,7 +90,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       valueContainer: (base) => ({
         ...base,
-        padding: '0.5rem 0.75rem', // py-2 px-3
+        padding: isSmall ? '0.25rem 0.5rem' : '0.5rem 0.75rem', // py-1 px-2 : py-2 px-3
       }),
       input: (base) => ({
         ...base,
@@ -118,8 +122,8 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       option: (base, state) => ({
         ...base,
-        padding: '0.625rem 1rem',
-        fontSize: '0.875rem',
+        padding: isSmall ? '0.5rem 0.75rem' : '0.625rem 1rem',
+        fontSize: isSmall ? '0.8125rem' : '0.875rem',
         backgroundColor: state.isSelected
           ? 'rgba(99, 102, 241, 0.05)'
           : state.isFocused
@@ -139,7 +143,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       dropdownIndicator: (base) => ({
         ...base,
-        padding: '0.5rem',
+        padding: isSmall ? '0.25rem' : '0.5rem',
         color: 'rgb(156 163 175)',
       }),
       noOptionsMessage: (base) => ({
@@ -158,7 +162,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
     const darkModeStyles: StylesConfig<SelectOption, false> = {
       control: (base, state) => ({
         ...base,
-        minHeight: '38px',
+        minHeight: isSmall ? '30px' : '38px',
         borderRadius: '0.375rem', // rounded-md
         borderColor: error
           ? 'rgb(185 28 28)' // red-700
@@ -185,7 +189,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       valueContainer: (base) => ({
         ...base,
-        padding: '0.5rem 0.75rem', // py-2 px-3
+        padding: isSmall ? '0.25rem 0.5rem' : '0.5rem 0.75rem', // py-1 px-2 : py-2 px-3
       }),
       input: (base) => ({
         ...base,
@@ -218,8 +222,8 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       option: (base, state) => ({
         ...base,
-        padding: '0.625rem 1rem',
-        fontSize: '0.875rem',
+        padding: isSmall ? '0.5rem 0.75rem' : '0.625rem 1rem',
+        fontSize: isSmall ? '0.8125rem' : '0.875rem',
         backgroundColor: state.isSelected
           ? 'rgba(99, 102, 241, 0.05)'
           : state.isFocused
@@ -239,7 +243,7 @@ const Select = forwardRef<SelectInstance<SelectOption, false, GroupBase<SelectOp
       }),
       dropdownIndicator: (base) => ({
         ...base,
-        padding: '0.5rem',
+        padding: isSmall ? '0.25rem' : '0.5rem',
         color: 'rgb(107 114 128)',
       }),
       noOptionsMessage: (base) => ({

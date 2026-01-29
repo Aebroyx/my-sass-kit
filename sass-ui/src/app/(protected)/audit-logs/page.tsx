@@ -8,7 +8,8 @@ import { DataTable } from '@/components/ui/DataTable';
 import { useGetAuditLogs } from '@/hooks/useAuditLogs';
 import { AuditLog } from '@/services/auditService';
 import { useDebounce } from '@/hooks/useDebounce';
-import { usePermission } from '@/hooks/usePermission';
+import Input from '@/components/ui/Input';
+import Select, { type SelectOption } from '@/components/ui/Select';
 
 // Helper to format action with color badges
 const getActionBadge = (action: string) => {
@@ -31,9 +32,6 @@ const getActionBadge = (action: string) => {
 };
 
 export default function AuditLogsPage() {
-  // Check permissions
-  const { hasAccess } = usePermission();
-
   // Table state
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -174,70 +172,65 @@ export default function AuditLogsPage() {
       {/* Filters */}
       <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Action
-          </label>
-          <select
+          <Select
+            label="Action"
+            name="auditAction"
             value={actionFilter}
-            onChange={(e) => {
-              setActionFilter(e.target.value);
+            onChange={(value) => {
+              setActionFilter(value);
               setPage(1);
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">All Actions</option>
-            <option value="CREATE">Create</option>
-            <option value="UPDATE">Update</option>
-            <option value="DELETE">Delete</option>
-            <option value="LOGIN_SUCCESS">Login Success</option>
-            <option value="LOGIN_FAILED">Login Failed</option>
-            <option value="LOGOUT">Logout</option>
-          </select>
+            options={
+              [
+                { value: '', label: 'All Actions' },
+                { value: 'CREATE', label: 'Create' },
+                { value: 'UPDATE', label: 'Update' },
+                { value: 'DELETE', label: 'Delete' },
+                { value: 'LOGIN_SUCCESS', label: 'Login Success' },
+                { value: 'LOGIN_FAILED', label: 'Login Failed' },
+                { value: 'LOGOUT', label: 'Logout' },
+              ] as SelectOption[]
+            }
+            className="w-full"
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Resource Type
-          </label>
-          <input
-            type="text"
+          <Input
+            id="auditResourceType"
+            label="Resource Type"
             value={resourceTypeFilter}
             onChange={(e) => {
               setResourceTypeFilter(e.target.value);
               setPage(1);
             }}
             placeholder="e.g., users, roles"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Start Date
-          </label>
-          <input
+          <Input
+            id="auditStartDate"
+            label="Start Date"
             type="datetime-local"
             value={startDate}
             onChange={(e) => {
               setStartDate(e.target.value);
               setPage(1);
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            End Date
-          </label>
-          <input
+          <Input
+            id="auditEndDate"
+            label="End Date"
             type="datetime-local"
             value={endDate}
             onChange={(e) => {
               setEndDate(e.target.value);
               setPage(1);
             }}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
       </div>
@@ -246,9 +239,9 @@ export default function AuditLogsPage() {
         columns={columns}
         data={data?.data || []}
         pageCount={data?.totalPages || 0}
-        currentPage={page}
+        page={page}
         pageSize={pageSize}
-        totalItems={data?.total || 0}
+        total={data?.total || 0}
         isLoading={isLoading}
         onPageChange={setPage}
         onPageSizeChange={(newSize) => {
@@ -259,8 +252,6 @@ export default function AuditLogsPage() {
         onSortChange={handleSortChange}
         searchPlaceholder="Search by username..."
         filterFields={filterFields}
-        enableColumnVisibility={true}
-        enableDensity={true}
       />
     </div>
   );
