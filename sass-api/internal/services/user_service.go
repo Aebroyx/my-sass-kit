@@ -398,3 +398,39 @@ func (s *UserService) DeleteUser(id string) (*models.Users, error) {
 
 	return &user, nil
 }
+
+func (s *UserService) ResetUserPassword(id string, req *models.ResetUserPasswordRequest) (*models.Users, error) {
+	var user models.Users
+	if err := s.db.Where("id = ?", id).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Verify current password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {
+		return nil, errors.New("invalid current password")
+	}
+
+	// Verify new password and confirm password
+	if req.NewPassword != req.ConfirmPassword {
+		return nil, errors.New("new password and confirm password do not match")
+	}
+
+	// Hash new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update user password
+	user.Password = string(hashedPassword)
+
+	// Update user
+	if err := s.db.Model(&user).Updates(&user).Error; err != nil {
+		return nil, err
+	}
+
+	// Reload with role
+	s.db.Preload("Role").First(&user, user.ID)
+
+	return &user, nil
+}

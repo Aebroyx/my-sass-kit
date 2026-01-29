@@ -17,5 +17,6 @@ func RegisterUserRoutes(router *gin.RouterGroup, h *handlers.UserHandler) {
 		user.POST("/create", h.CreateUser)
 		user.PUT("/:id", h.UpdateUser)
 		user.DELETE("/:id", h.DeleteUser)
+		user.POST("/reset-password/:id", h.ResetUserPassword)
 	}
 }

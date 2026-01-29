@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { userService, GetUserResponse, GetAllUsersParams, PaginatedResponse } from '@/services/userService';
+import { userService, GetUserResponse, GetAllUsersParams, PaginatedResponse, ResetPasswordRequest } from '@/services/userService';
 import { getErrorMessage } from '@/lib/axios';
 import toast from 'react-hot-toast';
 
@@ -101,6 +101,27 @@ export function useSoftDeleteUser() {
     },
     onError: (error: Error) => {
       toast.error(getErrorMessage(error, 'Failed to soft delete user'));
+    },
+  });
+}
+
+// Reset Password Mutation
+export function useResetPassword() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string | number } & ResetPasswordRequest) =>
+      userService.resetPassword(data.id, {
+        current_password: data.current_password,
+        new_password: data.new_password,
+        confirm_password: data.confirm_password,
+      }),
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: ['user', updatedUser.id] });
+      toast.success('Password reset successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(getErrorMessage(error, 'Failed to reset password'));
     },
   });
 }

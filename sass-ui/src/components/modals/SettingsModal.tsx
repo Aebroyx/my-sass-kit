@@ -1,10 +1,15 @@
 'use client';
 
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { Dialog, Transition, DialogTitle } from "@headlessui/react";
-import { XMarkIcon, SunIcon, MoonIcon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, SunIcon, MoonIcon, ArrowRightOnRectangleIcon, LockClosedIcon } from "@heroicons/react/24/outline";
 import { PrimaryButton, SecondaryButton } from "@/components/ui/buttons";
 import { useTheme } from "@/components/ThemeProvider";
+import Input from "@/components/ui/Input";
+import { useResetPassword } from "@/hooks/useUser";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import toast from "react-hot-toast";
 
 type SettingsModalType = {
   open: boolean;
@@ -18,10 +23,63 @@ export const SettingsModal = ({
   onLogout,
 }: SettingsModalType) => {
   const { theme, toggleTheme } = useTheme();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const resetPassword = useResetPassword();
+  const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleLogout = () => {
     setOpen(false);
     onLogout();
+  };
+
+  const handleResetPassword = () => {
+    setShowResetPasswordForm(true);
+  };
+
+  const handleCancelResetPassword = () => {
+    setShowResetPasswordForm(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleSubmitResetPassword = async () => {
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters");
+      return;
+    }
+
+    if (!user?.id) {
+      toast.error("User not found");
+      return;
+    }
+
+    try {
+      await resetPassword.mutateAsync({
+        id: user.id,
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+      // Reset form after successful submission
+      handleCancelResetPassword();
+    } catch (error) {
+      console.error("Reset password failed:", error);
+    }
   };
 
   return (
@@ -136,7 +194,86 @@ export const SettingsModal = ({
                         Manage your account settings and preferences
                       </p>
                     </div>
+
+                    {/* Reset Password Section */}
+                    <div className="rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-background p-4">
+                      {!showResetPasswordForm ? (
+                        <>
+                          <SecondaryButton
+                            type="button"
+                            onClick={handleResetPassword}
+                            fullWidth
+                            variant="default"
+                            className="justify-center"
+                          >
+                            <LockClosedIcon className="w-5 h-5" />
+                            <span>Reset Password</span>
+                          </SecondaryButton>
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+                            Reset your password
+                          </p>
+                        </>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                              Reset Password
+                            </h5>
+                            <div className="space-y-4">
+                              <Input
+                                id="current-password"
+                                type="password"
+                                label="Current Password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                required
+                                placeholder="Enter your current password"
+                              />
+                              <Input
+                                id="new-password"
+                                type="password"
+                                label="New Password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                placeholder="Enter your new password"
+                              />
+                              <Input
+                                id="confirm-password"
+                                type="password"
+                                label="Confirm New Password"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                required
+                                placeholder="Confirm your new password"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-3 pt-2">
+                            <SecondaryButton
+                              type="button"
+                              onClick={handleCancelResetPassword}
+                              variant="default"
+                              className="flex-1 justify-center"
+                            >
+                              Cancel
+                            </SecondaryButton>
+                            <PrimaryButton
+                              type="button"
+                              onClick={handleSubmitResetPassword}
+                              className="flex-1 justify-center"
+                              disabled={resetPassword.isPending}
+                            >
+                              {resetPassword.isPending ? 'Updating...' : 'Update Password'}
+                            </PrimaryButton>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     
+                    
+                    {/* Logout Button */}
                     <div className="rounded-lg border border-gray-200 dark:border-border-dark bg-gray-50 dark:bg-background p-4">
                       <SecondaryButton
                         type="button"
