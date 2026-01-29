@@ -86,6 +86,8 @@ func Auth(jwtSecret string, db *gorm.DB) gin.HandlerFunc {
 
 		// Set user in context
 		c.Set("user", userResponse)
+		c.Set("user_id", user.ID)
+		c.Set("username", user.Username)
 		c.Set("role", user.Role.Name)
 		c.Set("roleID", user.RoleID)
 

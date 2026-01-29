@@ -48,6 +48,22 @@ func RunMigrations(db *gorm.DB) error {
 		return fmt.Errorf("failed to migrate relationship tables: %w", err)
 	}
 
+	// Step 6: Migrate RefreshToken and AuditLog tables
+	log.Println("Step 6: Migrating RefreshToken and AuditLog tables...")
+	securityModels := []interface{}{
+		&models.RefreshToken{},
+		&models.AuditLog{},
+	}
+	if err := db.AutoMigrate(securityModels...); err != nil {
+		return fmt.Errorf("failed to migrate security tables: %w", err)
+	}
+
+	// Step 7: Seed Audit Logs menu
+	log.Println("Step 7: Seeding Audit Logs menu...")
+	if err := seedAuditLogsMenu(db); err != nil {
+		log.Printf("Warning: Failed to seed Audit Logs menu: %v", err)
+	}
+
 	log.Println("Database migrations completed successfully")
 	return nil
 }
@@ -112,6 +128,90 @@ func seedDefaultRoles(db *gorm.DB) error {
 		} else {
 			log.Printf("Role already exists: %s (ID: %d)", existing.Name, existing.ID)
 		}
+	}
+
+	return nil
+}
+
+// seedAuditLogsMenu creates the Audit Logs menu if it doesn't exist
+func seedAuditLogsMenu(db *gorm.DB) error {
+	// Check if menu already exists
+	var existing models.Menu
+	result := db.Where("path = ?", "/audit-logs").First(&existing)
+
+	if result.Error == gorm.ErrRecordNotFound {
+		// Find Configuration parent menu
+		var configMenu models.Menu
+		var parentID *uint
+
+		// Try to find Configuration menu by name or path
+		err := db.Where("name ILIKE ?", "%configuration%").
+			Or("path ILIKE ?", "%configuration%").
+			First(&configMenu).Error
+
+		if err == nil {
+			parentID = &configMenu.ID
+			log.Printf("Found Configuration menu (ID: %d), will create Audit Logs as child", configMenu.ID)
+		} else {
+			log.Printf("Configuration menu not found, creating Audit Logs as top-level menu")
+		}
+
+		// Create Audit Logs menu
+		menu := models.Menu{
+			Name:       "Audit Logs",
+			Path:       "/audit-logs",
+			Icon:       "clipboard",
+			OrderIndex: 100,
+			ParentID:   parentID,
+			IsActive:   true,
+		}
+
+		if err := db.Create(&menu).Error; err != nil {
+			return fmt.Errorf("failed to create Audit Logs menu: %w", err)
+		}
+
+		if parentID != nil {
+			log.Printf("Created Audit Logs menu (ID: %d) under Configuration menu (ID: %d)", menu.ID, *parentID)
+		} else {
+			log.Printf("Created Audit Logs menu (ID: %d) as top-level menu", menu.ID)
+		}
+
+		// Grant read permission to admin and root roles
+		var adminRole models.Role
+		if err := db.Where("name = ?", "admin").First(&adminRole).Error; err == nil {
+			roleMenu := models.RoleMenu{
+				RoleID:    adminRole.ID,
+				MenuID:    menu.ID,
+				CanRead:   true,
+				CanWrite:  false,
+				CanUpdate: false,
+				CanDelete: false,
+			}
+			if err := db.Create(&roleMenu).Error; err != nil {
+				log.Printf("Warning: Failed to grant admin permission to Audit Logs: %v", err)
+			} else {
+				log.Printf("Granted admin role read permission to Audit Logs menu")
+			}
+		}
+
+		var rootRole models.Role
+		if err := db.Where("name = ?", "root").First(&rootRole).Error; err == nil {
+			roleMenu := models.RoleMenu{
+				RoleID:    rootRole.ID,
+				MenuID:    menu.ID,
+				CanRead:   true,
+				CanWrite:  false,
+				CanUpdate: false,
+				CanDelete: false,
+			}
+			if err := db.Create(&roleMenu).Error; err != nil {
+				log.Printf("Warning: Failed to grant root permission to Audit Logs: %v", err)
+			} else {
+				log.Printf("Granted root role read permission to Audit Logs menu")
+			}
+		}
+	} else {
+		log.Printf("Audit Logs menu already exists (ID: %d)", existing.ID)
 	}
 
 	return nil

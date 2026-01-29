@@ -14,8 +14,9 @@ import (
 )
 
 type UserService struct {
-	db     *gorm.DB
-	config *config.Config
+	db           *gorm.DB
+	config       *config.Config
+	tokenService *TokenService
 }
 
 // UserQueryParams represents the query parameters for user listing
@@ -37,10 +38,11 @@ type UserListResponse struct {
 	TotalPages int            `json:"totalPages"`
 }
 
-func NewUserService(db *gorm.DB, config *config.Config) *UserService {
+func NewUserService(db *gorm.DB, config *config.Config, tokenService *TokenService) *UserService {
 	return &UserService{
-		db:     db,
-		config: config,
+		db:           db,
+		config:       config,
+		tokenService: tokenService,
 	}
 }
 
@@ -112,7 +114,13 @@ func (s *UserService) Register(req *models.RegisterRequest) (*models.RegisterRes
 }
 
 // Login authenticates a user and returns tokens
+// Deprecated: Use LoginWithContext instead
 func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
+	return s.LoginWithContext(req, "", "")
+}
+
+// LoginWithContext authenticates a user and returns tokens with IP and UserAgent tracking
+func (s *UserService) LoginWithContext(req *models.LoginRequest, ipAddress, userAgent string) (*models.LoginResponse, error) {
 	// Find user by username with role preloaded
 	var user models.Users
 	if err := s.db.Preload("Role").Where("username = ?", req.Username).First(&user).Error; err != nil {
@@ -127,15 +135,26 @@ func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, er
 		return nil, errors.New("invalid username or password")
 	}
 
-	// Generate tokens
+	// Generate access token (JWT)
 	accessToken, accessExp, err := s.generateToken(user, s.config.JWTExpiry)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, _, err := s.generateToken(user, 24*7*time.Hour) // 7 days
-	if err != nil {
-		return nil, err
+	// Create refresh token in database (if tokenService is available)
+	var refreshTokenStr string
+	if s.tokenService != nil {
+		refreshToken, err := s.tokenService.CreateRefreshToken(user.ID, ipAddress, userAgent)
+		if err != nil {
+			return nil, err
+		}
+		refreshTokenStr = refreshToken.Token
+	} else {
+		// Fallback to JWT-based refresh token for backward compatibility
+		refreshTokenStr, _, err = s.generateToken(user, s.config.RefreshTokenExpiry)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Create response
@@ -158,7 +177,7 @@ func (s *UserService) Login(req *models.LoginRequest) (*models.LoginResponse, er
 		},
 		Token: models.TokenResponse{
 			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
+			RefreshToken: refreshTokenStr,
 			TokenType:    "Bearer",
 			ExpiresIn:    int64(time.Until(accessExp).Seconds()),
 		},
