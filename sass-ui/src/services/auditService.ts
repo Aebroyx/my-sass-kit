@@ -71,7 +71,7 @@ export const auditService = {
       >(url);
       return response.data.data;
     } catch (error) {
-      handleApiError(error);
+      return handleApiError(error);
     }
   },
 
@@ -89,7 +89,7 @@ export const auditService = {
       >(`/audit/logs/user/${userId}?page=${page}&limit=${limit}`);
       return response.data.data;
     } catch (error) {
-      handleApiError(error);
+      return handleApiError(error);
     }
   },
 
@@ -110,7 +110,7 @@ export const auditService = {
       );
       return response.data.data;
     } catch (error) {
-      handleApiError(error);
+      return handleApiError(error);
     }
   },
 };

@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+**Current stack:** Next.js 16.1, React 19, TypeScript 5, Tailwind CSS 3
+
 ## Introduction
 nextjs kit by Aebroyx
 
@@ -13,7 +15,14 @@ This application have the following packagaes:
 - Tailwindcss
 - TailwindUI
 - HeroIcons
-- Redux
+- Redux Toolkit
+
+## Framework & Runtime
+
+- **Next.js:** `16.1.6`
+- **React / React DOM:** `19.2.4`
+- **TypeScript:** `^5`
+- **Node.js requirement:** `>= 20.9.0` (per Next.js 16)
 
 ## Running Local Development Envrionment
 First, run the development server:
@@ -33,6 +42,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Notes on Next.js 16 Upgrade
+
+This project has been upgraded from Next.js 14 → 16 using `npx @next/codemod@canary upgrade latest`, with the following key changes applied:
+
+- **Middleware → Proxy:** `src/middleware.ts` has been renamed to `src/proxy.ts` and now exports `proxy` instead of `middleware`.
+- **Async request APIs:** `cookies()` and other request APIs are now async; the logout route at `app/api/auth/logout/route.ts` has been updated to `await cookies()`.
+- **Async params in client routes:** Dynamic client routes under `app/(protected)/*/[id]/page.tsx` now treat `params` as `Promise<{ id: string }>` and unwrap them with `React.use(params)`.
+- **Type safety:** All TypeScript errors related to the upgrade have been resolved (`npx tsc --noEmit` passes).
 
 ## Learn More
 

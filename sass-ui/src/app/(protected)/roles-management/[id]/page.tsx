@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
@@ -14,10 +14,11 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
-export default function EditRolePage({ params }: { params: { id: string } }) {
+export default function EditRolePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/roles-management');
-  const { data: role, isLoading, error } = useGetRoleById(params.id);
+  const { data: role, isLoading, error } = useGetRoleById(id);
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const { data: roleMenus, isLoading: roleMenusLoading } = useGetRoleMenus(role?.id);
   const updateRole = useUpdateRole();
@@ -89,7 +90,7 @@ export default function EditRolePage({ params }: { params: { id: string } }) {
     try {
       // Update role info
       await updateRole.mutateAsync({
-        id: params.id,
+        id: id,
         ...formData,
       });
 

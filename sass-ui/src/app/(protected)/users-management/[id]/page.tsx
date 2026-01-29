@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
@@ -21,10 +21,11 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/users-management');
-  const { data: user, isLoading, error } = useGetUserById(params.id);
+  const { data: user, isLoading, error } = useGetUserById(id);
   const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const updateUser = useUpdateUser();
@@ -116,7 +117,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     try {
       // Update user info
       await updateUser.mutateAsync({
-        id: params.id,
+        id: id,
         name: formData.name,
         email: formData.email,
         username: formData.username,
