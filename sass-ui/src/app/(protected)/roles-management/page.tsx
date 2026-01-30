@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { EyeIcon, TrashIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { DataTable, FilterField } from '@/components/ui/DataTable';
@@ -13,6 +13,7 @@ import { RoleResponse } from '@/services/roleService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 import { usePermission } from '@/hooks/usePermission';
+import PrimaryBadge from '@/components/ui/PrimaryBadge';
 
 // Helper function to check if role can be deleted
 const canDeleteRole = (role: RoleResponse): boolean => {
@@ -122,10 +123,9 @@ export default function RolesManagementPage() {
         header: 'Default',
         cell: ({ row }) => (
           row.original.is_default ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-              <CheckCircleIcon className="h-3.5 w-3.5" />
+            <PrimaryBadge variant="info">
               Default
-            </span>
+            </PrimaryBadge>
           ) : (
             <span className="text-gray-400 dark:text-gray-500">-</span>
           )
@@ -135,17 +135,9 @@ export default function RolesManagementPage() {
         accessorKey: 'is_active',
         header: 'Status',
         cell: ({ row }) => (
-          row.original.is_active ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              <CheckCircleIcon className="h-3.5 w-3.5" />
-              Active
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-              <XCircleIcon className="h-3.5 w-3.5" />
-              Inactive
-            </span>
-          )
+          <PrimaryBadge variant={row.original.is_active ? 'success' : 'danger'}>
+            {row.original.is_active ? 'Active' : 'Inactive'}
+          </PrimaryBadge>
         ),
       },
       {

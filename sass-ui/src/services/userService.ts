@@ -54,6 +54,7 @@ interface GetUserResponse {
   role: RoleResponse;
   created_at: string;
   updated_at: string;
+  is_active: boolean;
 }
 
 interface CreateUserRequest {
@@ -62,6 +63,7 @@ interface CreateUserRequest {
   username: string;
   password: string;
   role_id: number;
+  is_active: boolean;
 }
 
 interface ErrorResponse {
@@ -77,6 +79,7 @@ interface UpdateUserRequest {
   role_id: number;
   username: string;
   password: string;
+  is_active: boolean;
 }
 
 interface ResetPasswordRequest {

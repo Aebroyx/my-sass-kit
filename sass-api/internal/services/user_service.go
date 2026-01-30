@@ -100,6 +100,7 @@ func (s *UserService) Register(req *models.RegisterRequest) (*models.RegisterRes
 		Username: user.Username,
 		Email:    user.Email,
 		Name:     user.Name,
+		IsActive: user.IsActive,
 		Role: models.RoleResponse{
 			ID:          user.Role.ID,
 			Name:        user.Role.Name,
@@ -135,6 +136,11 @@ func (s *UserService) LoginWithContext(req *models.LoginRequest, ipAddress, user
 		return nil, errors.New("invalid username or password")
 	}
 
+	// Check if user is active
+	if !user.IsActive {
+		return nil, errors.New("user is not active")
+	}
+
 	// Generate access token (JWT)
 	accessToken, accessExp, err := s.generateToken(user, s.config.JWTExpiry)
 	if err != nil {
@@ -164,6 +170,7 @@ func (s *UserService) LoginWithContext(req *models.LoginRequest, ipAddress, user
 			Username: user.Username,
 			Email:    user.Email,
 			Name:     user.Name,
+			IsActive: user.IsActive,
 			Role: models.RoleResponse{
 				ID:          user.Role.ID,
 				Name:        user.Role.Name,
@@ -290,6 +297,11 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.CreateU
 		return nil, err
 	}
 
+	// Validate IsActive is provided
+	if req.IsActive == nil {
+		return nil, errors.New("is_active is required")
+	}
+
 	// Create new user
 	user := models.Users{
 		Username: req.Username,
@@ -297,6 +309,7 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.CreateU
 		Password: string(hashedPassword),
 		Name:     req.Name,
 		RoleID:   req.RoleID,
+		IsActive: *req.IsActive,
 	}
 
 	if err := s.db.Create(&user).Error; err != nil {
@@ -312,6 +325,7 @@ func (s *UserService) CreateUser(req *models.CreateUserRequest) (*models.CreateU
 		Username: user.Username,
 		Email:    user.Email,
 		Name:     user.Name,
+		IsActive: user.IsActive,
 		Role: models.RoleResponse{
 			ID:          user.Role.ID,
 			Name:        user.Role.Name,
@@ -340,11 +354,17 @@ func (s *UserService) UpdateUser(id string, req *models.UpdateUserRequest) (*mod
 		}
 	}
 
+	// Validate IsActive is provided
+	if req.IsActive == nil {
+		return nil, errors.New("is_active is required")
+	}
+
 	// Update user fields
 	user.Username = req.Username
 	user.Email = req.Email
 	user.Name = req.Name
 	user.RoleID = req.RoleID
+	user.IsActive = *req.IsActive
 
 	// Only update password if provided
 	if req.Password != "" {
@@ -355,8 +375,13 @@ func (s *UserService) UpdateUser(id string, req *models.UpdateUserRequest) (*mod
 		user.Password = string(hashedPassword)
 	}
 
-	// Update user
-	if err := s.db.Model(&user).Updates(&user).Error; err != nil {
+	// Update user - use Select to explicitly specify fields to update (including is_active even when false)
+	fieldsToUpdate := []string{"username", "email", "name", "role_id", "is_active"}
+	if req.Password != "" {
+		fieldsToUpdate = append(fieldsToUpdate, "password")
+	}
+
+	if err := s.db.Model(&user).Select(fieldsToUpdate).Updates(&user).Error; err != nil {
 		return nil, err
 	}
 

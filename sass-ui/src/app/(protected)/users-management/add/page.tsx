@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
-import Input from '@/components/ui/Input';
+import Input, { Toggle } from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
@@ -29,6 +29,7 @@ export default function AddUserPage() {
     username: '',
     password: '',
     role: '',
+    is_active: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -55,6 +56,13 @@ export default function AddUserPage() {
     setFormData((prev) => ({ ...prev, role: value }));
     if (errors.role) {
       setErrors((prev) => ({ ...prev, role: '' }));
+    }
+  };
+
+  const handleChangeActive = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, is_active: checked }));
+    if (errors.is_active) {
+      setErrors((prev) => ({ ...prev, is_active: '' }));
     }
   };
 
@@ -104,6 +112,7 @@ export default function AddUserPage() {
         username: formData.username,
         password: formData.password,
         role_id: role.id,
+        is_active: formData.is_active,
       });
 
       // Extract user ID from response
@@ -249,7 +258,7 @@ export default function AddUserPage() {
                 />
               </FormRow>
 
-              <FormRow>
+              <FormRow columns={2}>
                 <Select
                   label="Role"
                   name="role"
@@ -260,6 +269,12 @@ export default function AddUserPage() {
                   disabled={rolesLoading}
                   placeholder="Select a role"
                   required
+                />
+                <Toggle
+                  label="Active"
+                  description="Active users can login and access the application. Inactive users cannot login."
+                  checked={formData.is_active}
+                  onChange={handleChangeActive}
                 />
               </FormRow>
             </FormSection>

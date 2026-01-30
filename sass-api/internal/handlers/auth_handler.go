@@ -81,6 +81,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		switch err.Error() {
 		case "invalid username or password":
 			common.SendError(c, http.StatusBadRequest, "Invalid username or password", common.CodeBadRequest, nil)
+		case "user is not active":
+			common.SendError(c, http.StatusForbidden, "User is not active", common.CodeForbidden, nil)
 		default:
 			common.SendError(c, http.StatusInternalServerError, "Internal server error", common.CodeInternalError, nil)
 		}

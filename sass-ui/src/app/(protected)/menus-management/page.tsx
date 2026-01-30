@@ -13,6 +13,7 @@ import { MenuResponse } from '@/services/menuService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 import { usePermission } from '@/hooks/usePermission';
+import PrimaryBadge from '@/components/ui/PrimaryBadge';
 
 // Business logic: Prevent deletion of core/system menus
 const canDeleteMenu = (menu: MenuResponse): boolean => {
@@ -138,15 +139,9 @@ export default function MenusManagementPage() {
         accessorKey: 'is_active',
         header: 'Status',
         cell: ({ row }) => (
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-              row.original.is_active
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                : 'bg-gray-100 text-gray-800 dark:bg-hover-bg dark:text-gray-400'
-            }`}
-          >
+          <PrimaryBadge variant={row.original.is_active ? 'success' : 'neutral'} icon="none">
             {row.original.is_active ? 'Active' : 'Inactive'}
-          </span>
+          </PrimaryBadge>
         ),
       },
       {
