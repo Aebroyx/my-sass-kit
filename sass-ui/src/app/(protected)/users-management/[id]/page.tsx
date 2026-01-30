@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
-import Input from '@/components/ui/Input';
+import Input, { Toggle } from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { MenuPermissionsEditor, MenuPermission } from '@/components/ui/MenuPermissionsEditor';
 import { PrimaryButton, SecondaryButton } from '@/components/ui/buttons';
@@ -21,10 +21,11 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/users-management');
-  const { data: user, isLoading, error } = useGetUserById(params.id);
+  const { data: user, isLoading, error } = useGetUserById(id);
   const { data: roles, isLoading: rolesLoading } = useGetActiveRoles();
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const updateUser = useUpdateUser();
@@ -36,6 +37,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     username: '',
     password: '',
     role: '',
+    is_active: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,6 +69,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
         username: user.username,
         password: '',
         role: user.role?.name || '',
+        is_active: user.is_active,
       });
     }
   }, [user]);
@@ -83,6 +86,13 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     setFormData((prev) => ({ ...prev, role: value }));
     if (errors.role) {
       setErrors((prev) => ({ ...prev, role: '' }));
+    }
+  };
+
+  const handleChangeActive = (checked: boolean) => {
+    setFormData((prev) => ({ ...prev, is_active: checked }));
+    if (errors.is_active) {
+      setErrors((prev) => ({ ...prev, is_active: '' }));
     }
   };
 
@@ -116,12 +126,13 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     try {
       // Update user info
       await updateUser.mutateAsync({
-        id: params.id,
+        id: id,
         name: formData.name,
         email: formData.email,
         username: formData.username,
         password: formData.password,
         role_id: selectedRole?.id || 0,
+        is_active: formData.is_active,
       });
 
       // Save ONLY custom permission overrides (not inherited ones)
@@ -293,7 +304,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                   />
                 </FormRow>
 
-                <FormRow>
+                <FormRow columns={2}>
                   <Select
                     label="Role"
                     name="role"
@@ -304,6 +315,12 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
                     disabled={!canEdit || rolesLoading}
                     placeholder="Select a role"
                     required
+                  />
+                  <Toggle
+                    label="Active"
+                    description="Active users can login and access the application. Inactive users cannot login."
+                    checked={formData.is_active}
+                    onChange={handleChangeActive}
                   />
                 </FormRow>
               </FormSection>

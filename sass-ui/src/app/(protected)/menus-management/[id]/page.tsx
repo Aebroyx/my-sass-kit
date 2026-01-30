@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FormCard, FormSection, FormRow, FormActions } from '@/components/ui/FormCard';
@@ -14,10 +14,11 @@ import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
 
-export default function EditMenuPage({ params }: { params: { id: string } }) {
+export default function EditMenuPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const { can_update: hasUpdatePermission, isLoading: permissionsLoading } = usePermission('/menus-management');
-  const { data: menu, isLoading, error } = useGetMenuById(params.id);
+  const { data: menu, isLoading, error } = useGetMenuById(id);
   const { data: menuTree, isLoading: menusLoading } = useGetMenuTree();
   const updateMenu = useUpdateMenu();
 
@@ -123,7 +124,7 @@ export default function EditMenuPage({ params }: { params: { id: string } }) {
     setIsSubmitting(true);
     try {
       await updateMenu.mutateAsync({
-        id: params.id,
+        id: id,
         name: formData.name,
         path: formData.path,
         icon: formData.icon,

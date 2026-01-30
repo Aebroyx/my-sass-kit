@@ -10,24 +10,25 @@ import { AuditLog } from '@/services/auditService';
 import { useDebounce } from '@/hooks/useDebounce';
 import Input from '@/components/ui/Input';
 import Select, { type SelectOption } from '@/components/ui/Select';
+import SecondaryBadge, { SecondaryBadgeVariant } from '@/components/ui/SecondaryBadge';
 
 // Helper to format action with color badges
 const getActionBadge = (action: string) => {
-  const colorMap: Record<string, string> = {
-    CREATE: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    UPDATE: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    DELETE: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-    LOGIN_SUCCESS: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    LOGIN_FAILED: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-    LOGOUT: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+  const variantMap: Record<string, SecondaryBadgeVariant> = {
+    CREATE: 'green',
+    UPDATE: 'blue',
+    DELETE: 'red',
+    LOGIN_SUCCESS: 'purple',
+    LOGIN_FAILED: 'orange',
+    LOGOUT: 'gray',
   };
 
-  const colorClass = colorMap[action] || 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+  const variant = variantMap[action] || 'gray';
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+    <SecondaryBadge variant={variant}>
       {action}
-    </span>
+    </SecondaryBadge>
   );
 };
 
@@ -249,6 +250,8 @@ export default function AuditLogsPage() {
           setPage(1);
         }}
         onSearch={handleSearch}
+        sortBy={sortBy}
+        sortDesc={sortDesc}
         onSortChange={handleSortChange}
         searchPlaceholder="Search by username..."
         filterFields={filterFields}

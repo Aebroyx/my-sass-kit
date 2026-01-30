@@ -8,7 +8,7 @@ export function useCreateUser() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { name: string; email: string; username: string; password: string; role_id: number }) =>
+    mutationFn: (data: { name: string; email: string; username: string; password: string; role_id: number; is_active: boolean }) =>
       userService.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -53,6 +53,7 @@ export function useUpdateUser() {
       username: string;
       password: string;
       role_id: number;
+      is_active: boolean;
     }) =>
       userService.updateUser(data.id, {
         name: data.name,
@@ -60,6 +61,7 @@ export function useUpdateUser() {
         role_id: data.role_id,
         username: data.username,
         password: data.password || '',
+        is_active: data.is_active,
       }),
     onSuccess: (updatedUser) => {
       // Invalidate both queries to force a refetch

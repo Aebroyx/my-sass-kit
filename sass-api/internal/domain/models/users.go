@@ -18,6 +18,7 @@ type Users struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 	IsDeleted bool           `json:"is_deleted" gorm:"default:false"`
+	IsActive  bool           `json:"is_active"`
 
 	// Relationships
 	Role         Role           `json:"role" gorm:"foreignKey:RoleID"`
@@ -40,6 +41,7 @@ type RegisterResponse struct {
 	Email    string       `json:"email"`
 	Name     string       `json:"name"`
 	Role     RoleResponse `json:"role"`
+	IsActive bool         `json:"is_active"`
 }
 
 // LoginRequest represents the login request payload
@@ -79,6 +81,7 @@ type CreateUserRequest struct {
 	Password string `json:"password" validate:"required,min=6"`
 	Name     string `json:"name" validate:"required,max=100"`
 	RoleID   uint   `json:"role_id" validate:"required,min=1"`
+	IsActive *bool  `json:"is_active" validate:"required"`
 }
 
 // CreateUserResponse represents the response payload for creating a user
@@ -88,6 +91,7 @@ type CreateUserResponse struct {
 	Email     string       `json:"email"`
 	Name      string       `json:"name"`
 	Role      RoleResponse `json:"role"`
+	IsActive  bool         `json:"is_active"`
 	CreatedAt time.Time    `json:"created_at"`
 }
 
@@ -97,6 +101,7 @@ type UpdateUserRequest struct {
 	Name     string `json:"name" validate:"required,max=100"`
 	RoleID   uint   `json:"role_id" validate:"required,min=1"`
 	Password string `json:"password,omitempty" validate:"omitempty,min=6"`
+	IsActive *bool  `json:"is_active" validate:"required"`
 }
 
 type ResetUserPasswordRequest struct {

@@ -13,6 +13,7 @@ import { GetUserResponse } from '@/services/userService';
 import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 import { usePermission } from '@/hooks/usePermission';
+import PrimaryBadge from '@/components/ui/PrimaryBadge';
 
 // Helper function to check if user can be deleted
 const canDeleteUser = (user: GetUserResponse): boolean => {
@@ -140,6 +141,15 @@ export default function UsersManagementPage() {
               ? format(new Date(row.original.updated_at), 'yyyy-MM-dd HH:mm')
               : '-'}
           </span>
+        ),
+      },
+      {
+        accessorKey: 'is_active',
+        header: 'Active',
+        cell: ({ row }) => (
+          <PrimaryBadge variant={row.original.is_active ? 'success' : 'danger'}>
+            {row.original.is_active ? 'Active' : 'Inactive'}
+          </PrimaryBadge>
         ),
       },
       {
