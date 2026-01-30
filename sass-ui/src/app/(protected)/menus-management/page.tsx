@@ -3,10 +3,12 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { DataTable, FilterField } from '@/components/ui/DataTable';
+import { ExportMenusButton, MenuImportModal } from '@/components/menus';
+import { SecondaryButton } from '@/components/ui/buttons';
 import DeleteModal from '@/components/modals/DeleteModal';
 import { useDeleteMenu, useGetAllMenus } from '@/hooks/useMenu';
 import { MenuResponse } from '@/services/menuService';
@@ -50,6 +52,9 @@ export default function MenusManagementPage() {
   const deleteMenu = useDeleteMenu();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [menuToDelete, setMenuToDelete] = useState<number | null>(null);
+
+  // Import modal state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Handlers
   const openDeleteModal = (id: number) => {
@@ -255,6 +260,17 @@ export default function MenusManagementPage() {
 
   return (
     <>
+      {/* Import/Export Buttons */}
+      {hasWritePermission && (
+        <div className="mb-4 flex justify-end gap-2">
+          <ExportMenusButton />
+          <SecondaryButton onClick={() => setIsImportModalOpen(true)}>
+            <ArrowUpTrayIcon className="h-5 w-5" />
+            Import
+          </SecondaryButton>
+        </div>
+      )}
+
       <DataTable<MenuResponse>
         columns={columns}
         data={data?.data || []}
@@ -314,6 +330,11 @@ export default function MenusManagementPage() {
         description="Are you sure you want to delete this menu? This action cannot be undone and will affect navigation permissions."
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <MenuImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </>
   );

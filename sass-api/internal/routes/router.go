@@ -15,8 +15,11 @@ import (
 type Handlers struct {
 	Auth         *handlers.AuthHandler
 	User         *handlers.UserHandler
+	UserImport   *handlers.UserImportHandler
 	Role         *handlers.RoleHandler
+	RoleImport   *handlers.RoleImportHandler
 	Menu         *handlers.MenuHandler
+	MenuImport   *handlers.MenuImportHandler
 	RightsAccess *handlers.RightsAccessHandler
 	Search       *handlers.SearchHandler
 	Token        *handlers.TokenHandler
@@ -112,8 +115,11 @@ func registerProtectedRoutes(router *gin.RouterGroup, h *Handlers) {
 	RegisterTokenRoutes(router, h.Token)
 	RegisterAuditRoutes(router, h.Audit)
 	RegisterUserRoutes(router, h.User)
+	RegisterUserImportRoutes(router, h.UserImport)
 	RegisterRoleRoutes(router, h.Role)
+	RegisterRoleImportRoutes(router, h.RoleImport)
 	RegisterMenuRoutes(router, h.Menu)
+	RegisterMenuImportRoutes(router, h.MenuImport)
 	RegisterRightsAccessRoutes(router, h.RightsAccess)
 	RegisterSearchRoutes(router, h.Search)
 }

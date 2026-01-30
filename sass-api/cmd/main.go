@@ -44,8 +44,11 @@ func main() {
 	auditService := services.NewAuditService(db.DB)
 	rateLimiterService := services.NewRateLimiterService(cfg)
 	userService := services.NewUserService(db.DB, cfg, tokenService)
+	userImportService := services.NewUserImportService(db.DB)
 	roleService := services.NewRoleService(db.DB, cfg)
+	roleImportService := services.NewRoleImportService(db.DB)
 	menuService := services.NewMenuService(db.DB, cfg)
+	menuImportService := services.NewMenuImportService(db.DB)
 	rightsAccessService := services.NewRightsAccessService(db.DB, cfg)
 	permissionService := services.NewPermissionService(db.DB, cfg, menuService)
 	searchService := services.NewSearchService(db.DB, cfg, permissionService)
@@ -54,8 +57,11 @@ func main() {
 	h := &routes.Handlers{
 		Auth:         handlers.NewAuthHandler(userService, auditService),
 		User:         handlers.NewUserHandler(userService),
+		UserImport:   handlers.NewUserImportHandler(userImportService),
 		Role:         handlers.NewRoleHandler(roleService),
+		RoleImport:   handlers.NewRoleImportHandler(roleImportService),
 		Menu:         handlers.NewMenuHandler(menuService),
+		MenuImport:   handlers.NewMenuImportHandler(menuImportService),
 		RightsAccess: handlers.NewRightsAccessHandler(rightsAccessService),
 		Search:       handlers.NewSearchHandler(searchService),
 		Token:        handlers.NewTokenHandler(tokenService, userService, cfg, db.DB),

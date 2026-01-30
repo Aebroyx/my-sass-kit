@@ -3,10 +3,12 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, TrashIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { DataTable, FilterField } from '@/components/ui/DataTable';
+import { ExportRolesButton, RoleImportModal } from '@/components/roles';
+import { SecondaryButton } from '@/components/ui/buttons';
 import DeleteModal from '@/components/modals/DeleteModal';
 import { useGetAllRoles, useDeleteRole } from '@/hooks/useRole';
 import { RoleResponse } from '@/services/roleService';
@@ -55,6 +57,9 @@ export default function RolesManagementPage() {
   const deleteRole = useDeleteRole();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<number | null>(null);
+
+  // Import modal state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Handlers
   const openDeleteModal = (id: number) => {
@@ -262,6 +267,17 @@ export default function RolesManagementPage() {
 
   return (
     <>
+      {/* Import/Export Buttons */}
+      {hasWritePermission && (
+        <div className="mb-4 flex justify-end gap-2">
+          <ExportRolesButton />
+          <SecondaryButton onClick={() => setIsImportModalOpen(true)}>
+            <ArrowUpTrayIcon className="h-5 w-5" />
+            Import
+          </SecondaryButton>
+        </div>
+      )}
+
       <DataTable<RoleResponse>
         columns={columns}
         data={data?.data || []}
@@ -321,6 +337,11 @@ export default function RolesManagementPage() {
         description="Are you sure you want to delete this role? Users with this role will need to be reassigned."
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <RoleImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </>
   );

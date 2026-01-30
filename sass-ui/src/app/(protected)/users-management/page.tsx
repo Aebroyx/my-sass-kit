@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ColumnDef } from '@tanstack/react-table';
-import { EyeIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, TrashIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 
 import { DataTable, FilterField } from '@/components/ui/DataTable';
@@ -14,6 +14,8 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { FilterCondition } from '@/components/modals/AdvancedFilterModal';
 import { usePermission } from '@/hooks/usePermission';
 import PrimaryBadge from '@/components/ui/PrimaryBadge';
+import { ExportUsersButton, UserImportModal } from '@/components/users';
+import { SecondaryButton } from '@/components/ui/buttons';
 
 // Helper function to check if user can be deleted
 const canDeleteUser = (user: GetUserResponse): boolean => {
@@ -54,6 +56,9 @@ export default function UsersManagementPage() {
   const deleteUser = useDeleteUser();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
+
+  // Import modal state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Handlers
   const openDeleteModal = (id: number) => {
@@ -248,6 +253,17 @@ export default function UsersManagementPage() {
         </div>
       )}
 
+      {/* Import/Export Buttons */}
+      {hasWritePermission && (
+        <div className="mb-4 flex justify-end gap-2">
+          <ExportUsersButton />
+          <SecondaryButton onClick={() => setIsImportModalOpen(true)}>
+            <ArrowUpTrayIcon className="h-5 w-5" />
+            Import
+          </SecondaryButton>
+        </div>
+      )}
+
       <DataTable<GetUserResponse>
         columns={columns}
         data={data?.data || []}
@@ -305,6 +321,11 @@ export default function UsersManagementPage() {
         description="Are you sure you want to delete this user? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
+      />
+
+      <UserImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </>
   );
