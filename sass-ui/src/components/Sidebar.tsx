@@ -374,7 +374,7 @@ function MenuItemComponent({
   const itemClassName = classNames(
     isActive || isChildActive
       ? 'bg-gray-100 dark:bg-hover-bg text-primary border-l-4 border-transparent'
-      : 'text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary border-l-4 border-transparent',
+      : 'text-foreground hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-primary border-l-4 border-transparent',
     'group flex w-full items-center gap-x-3 rounded-lg p-2.5 text-sm font-medium transition-all duration-200',
     depth > 0 ? 'pl-10' : '',
     collapsed && depth === 0 ? 'justify-center' : ''
@@ -816,7 +816,7 @@ export function Sidebar({
             <button
               onClick={() => setIsSettingsModalOpen(true)}
               className={classNames(
-                'group -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-foreground hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary transition-colors',
+                'group -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-foreground hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-primary transition-colors',
                 isCollapsed && !isMobile ? 'justify-center' : 'justify-between'
               )}
               title={isCollapsed && !isMobile ? 'Settings' : undefined}
@@ -838,7 +838,7 @@ export function Sidebar({
               <button
                 onClick={() => handleSetCollapsed(!isCollapsed)}
                 className={classNames(
-                  'mt-2 -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-gray-400 hover:bg-gray-50 dark:hover:bg-hover-bg/50 hover:text-primary transition-colors',
+                  'mt-2 -mx-2 flex w-full items-center rounded-lg p-2.5 text-sm font-medium text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-800 hover:text-primary transition-colors',
                   isCollapsed ? 'justify-center' : 'justify-between'
                 )}
                 title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
