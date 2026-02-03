@@ -39,6 +39,15 @@ type Config struct {
 	RateLimitPerIP     int
 	RateLimitPerUser   int
 	RateLimitWindow    time.Duration
+
+	// Email config (Resend)
+	ResendAPIKey          string
+	EmailFromAddress      string
+	EmailFromName         string
+	EmailEnabled          bool
+	EmailRateLimitPerMin  int
+	EmailRateLimitPerHour int
+	TestEmailAddress      string
 }
 
 // Load loads the configuration from environment variables
@@ -97,6 +106,15 @@ func Load() (*Config, error) {
 		RateLimitPerIP:   getEnvInt("RATE_LIMIT_PER_IP", 100),
 		RateLimitPerUser: getEnvInt("RATE_LIMIT_PER_USER", 1000),
 		RateLimitWindow:  rateLimitWindow,
+
+		// Email config (Resend)
+		ResendAPIKey:          getEnv("RESEND_API_KEY", ""),
+		EmailFromAddress:      getEnv("EMAIL_FROM_ADDRESS", "noreply@localhost"),
+		EmailFromName:         getEnv("EMAIL_FROM_NAME", "SaaS App"),
+		EmailEnabled:          getEnv("EMAIL_ENABLED", "false") == "true",
+		EmailRateLimitPerMin:  getEnvInt("EMAIL_RATE_LIMIT_PER_MINUTE", 60),
+		EmailRateLimitPerHour: getEnvInt("EMAIL_RATE_LIMIT_PER_HOUR", 500),
+		TestEmailAddress:      getEnv("TEST_EMAIL_ADDRESS", "test@example.com"),
 	}, nil
 }
 

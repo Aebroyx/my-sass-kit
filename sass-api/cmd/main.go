@@ -52,20 +52,24 @@ func main() {
 	rightsAccessService := services.NewRightsAccessService(db.DB, cfg)
 	permissionService := services.NewPermissionService(db.DB, cfg, menuService)
 	searchService := services.NewSearchService(db.DB, cfg, permissionService)
+	emailTemplateService := services.NewEmailTemplateService(db.DB, cfg)
+	emailService := services.NewEmailService(db.DB, cfg, emailTemplateService)
 
 	// Initialize handlers
 	h := &routes.Handlers{
-		Auth:         handlers.NewAuthHandler(userService, auditService),
-		User:         handlers.NewUserHandler(userService),
-		UserImport:   handlers.NewUserImportHandler(userImportService),
-		Role:         handlers.NewRoleHandler(roleService),
-		RoleImport:   handlers.NewRoleImportHandler(roleImportService),
-		Menu:         handlers.NewMenuHandler(menuService),
-		MenuImport:   handlers.NewMenuImportHandler(menuImportService),
-		RightsAccess: handlers.NewRightsAccessHandler(rightsAccessService),
-		Search:       handlers.NewSearchHandler(searchService),
-		Token:        handlers.NewTokenHandler(tokenService, userService, cfg, db.DB),
-		Audit:        handlers.NewAuditHandler(auditService),
+		Auth:          handlers.NewAuthHandler(userService, auditService),
+		User:          handlers.NewUserHandler(userService),
+		UserImport:    handlers.NewUserImportHandler(userImportService),
+		Role:          handlers.NewRoleHandler(roleService),
+		RoleImport:    handlers.NewRoleImportHandler(roleImportService),
+		Menu:          handlers.NewMenuHandler(menuService),
+		MenuImport:    handlers.NewMenuImportHandler(menuImportService),
+		RightsAccess:  handlers.NewRightsAccessHandler(rightsAccessService),
+		Search:        handlers.NewSearchHandler(searchService),
+		Token:         handlers.NewTokenHandler(tokenService, userService, cfg, db.DB),
+		Audit:         handlers.NewAuditHandler(auditService),
+		Email:         handlers.NewEmailHandler(emailService),
+		EmailTemplate: handlers.NewEmailTemplateHandler(emailTemplateService),
 	}
 
 	// Initialize services struct for router

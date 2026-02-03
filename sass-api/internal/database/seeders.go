@@ -101,6 +101,22 @@ func SeedDefaultMenus(db *gorm.DB) error {
 			ParentID:   &configurationsMenu.ID,
 			IsActive:   true,
 		},
+		{
+			Name:       "Audit Logs",
+			Path:       "/audit-logs",
+			Icon:       "Clipboard",
+			OrderIndex: 100,
+			ParentID:   &configurationsMenu.ID,
+			IsActive:   true,
+		},
+		{
+			Name:       "Email Logs",
+			Path:       "/email-logs",
+			Icon:       "Envelope",
+			OrderIndex: 101,
+			ParentID:   &configurationsMenu.ID,
+			IsActive:   true,
+		},
 	}
 
 	for _, menu := range childMenus {
@@ -170,12 +186,13 @@ func SeedDefaultRoleMenus(db *gorm.DB) error {
 		},
 		"user": {
 			MenuFilter: func(m models.Menu) bool {
-				return m.Name == "Dashboard" // Dashboard only
+				// User can only access Dashboard
+				return m.Name == "Dashboard"
 			},
-			CanRead:    true,
-			CanWrite:   false,
-			CanUpdate:  false,
-			CanDelete:  false,
+			CanRead:   true,
+			CanWrite:  false,
+			CanUpdate: false,
+			CanDelete: false,
 		},
 	}
 

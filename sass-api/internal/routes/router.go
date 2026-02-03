@@ -13,17 +13,19 @@ import (
 
 // Handlers holds all handler instances
 type Handlers struct {
-	Auth         *handlers.AuthHandler
-	User         *handlers.UserHandler
-	UserImport   *handlers.UserImportHandler
-	Role         *handlers.RoleHandler
-	RoleImport   *handlers.RoleImportHandler
-	Menu         *handlers.MenuHandler
-	MenuImport   *handlers.MenuImportHandler
-	RightsAccess *handlers.RightsAccessHandler
-	Search       *handlers.SearchHandler
-	Token        *handlers.TokenHandler
-	Audit        *handlers.AuditHandler
+	Auth          *handlers.AuthHandler
+	User          *handlers.UserHandler
+	UserImport    *handlers.UserImportHandler
+	Role          *handlers.RoleHandler
+	RoleImport    *handlers.RoleImportHandler
+	Menu          *handlers.MenuHandler
+	MenuImport    *handlers.MenuImportHandler
+	RightsAccess  *handlers.RightsAccessHandler
+	Search        *handlers.SearchHandler
+	Token         *handlers.TokenHandler
+	Audit         *handlers.AuditHandler
+	Email         *handlers.EmailHandler
+	EmailTemplate *handlers.EmailTemplateHandler
 }
 
 // Services holds all service instances needed by the router
@@ -122,4 +124,6 @@ func registerProtectedRoutes(router *gin.RouterGroup, h *Handlers) {
 	RegisterMenuImportRoutes(router, h.MenuImport)
 	RegisterRightsAccessRoutes(router, h.RightsAccess)
 	RegisterSearchRoutes(router, h.Search)
+	RegisterEmailRoutes(router, h.Email)
+	RegisterEmailTemplateRoutes(router, h.EmailTemplate)
 }
