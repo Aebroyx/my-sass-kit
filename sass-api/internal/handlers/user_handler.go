@@ -7,6 +7,7 @@ import (
 	"github.com/Aebroyx/sass-api/internal/domain/models"
 	"github.com/Aebroyx/sass-api/internal/pagination"
 	"github.com/Aebroyx/sass-api/internal/services"
+	"github.com/Aebroyx/sass-api/internal/validators"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -17,9 +18,14 @@ type UserHandler struct {
 }
 
 func NewUserHandler(userService *services.UserService) *UserHandler {
+	validate := validator.New()
+	// Register custom validators
+	if err := validators.RegisterCustomValidators(validate); err != nil {
+		panic(err)
+	}
 	return &UserHandler{
 		userService: userService,
-		validate:    validator.New(),
+		validate:    validate,
 	}
 }
 

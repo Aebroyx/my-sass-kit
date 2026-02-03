@@ -20,6 +20,7 @@ import { usePermission } from '@/hooks/usePermission';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
 import toast from 'react-hot-toast';
+import { validatePassword, PASSWORD_REQUIREMENTS } from '@/lib/utils';
 
 export default function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -106,8 +107,11 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
     if (!formData.username.trim()) newErrors.username = 'Username is required';
-    if (formData.password && formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    if (formData.password) {
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.errors.join('. ');
+      }
     }
     if (!formData.role) newErrors.role = 'Role is required';
     setErrors(newErrors);
@@ -298,7 +302,7 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
                     value={formData.password}
                     onChange={handleChange}
                     error={errors.password}
-                    helperText="Leave blank to keep current password."
+                    helperText={`Leave blank to keep current password. ${PASSWORD_REQUIREMENTS}`}
                     autoComplete="new-password"
                     disabled={!canEdit}
                   />

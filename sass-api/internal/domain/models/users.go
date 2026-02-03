@@ -30,7 +30,7 @@ type Users struct {
 type RegisterRequest struct {
 	Username string `json:"username" validate:"required,min=3,max=50"`
 	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=6"`
+	Password string `json:"password" validate:"required,password"`
 	Name     string `json:"name" validate:"required,max=100"`
 }
 
@@ -78,7 +78,7 @@ type Claims struct {
 type CreateUserRequest struct {
 	Username string `json:"username" validate:"required,min=3,max=50"`
 	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=6"`
+	Password string `json:"password" validate:"required,password"`
 	Name     string `json:"name" validate:"required,max=100"`
 	RoleID   uint   `json:"role_id" validate:"required,min=1"`
 	IsActive *bool  `json:"is_active" validate:"required"`
@@ -100,12 +100,12 @@ type UpdateUserRequest struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Name     string `json:"name" validate:"required,max=100"`
 	RoleID   uint   `json:"role_id" validate:"required,min=1"`
-	Password string `json:"password,omitempty" validate:"omitempty,min=6"`
+	Password string `json:"password,omitempty" validate:"omitempty,password"`
 	IsActive *bool  `json:"is_active" validate:"required"`
 }
 
 type ResetUserPasswordRequest struct {
-	CurrentPassword string `json:"current_password" validate:"required,min=6"`
-	NewPassword     string `json:"new_password" validate:"required,min=6"`
-	ConfirmPassword string `json:"confirm_password" validate:"required,min=6"`
+	CurrentPassword string `json:"current_password" validate:"required"`
+	NewPassword     string `json:"new_password" validate:"required,password"`
+	ConfirmPassword string `json:"confirm_password" validate:"required"`
 }

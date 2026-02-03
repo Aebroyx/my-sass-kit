@@ -10,6 +10,7 @@ import { useResetPassword } from "@/hooks/useUser";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import toast from "react-hot-toast";
+import { validatePassword, PASSWORD_REQUIREMENTS } from "@/lib/utils";
 
 type SettingsModalType = {
   open: boolean;
@@ -58,8 +59,10 @@ export const SettingsModal = ({
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters");
+    // Enhanced password validation
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.errors.join('. '));
       return;
     }
 
@@ -237,6 +240,7 @@ export const SettingsModal = ({
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 required
                                 placeholder="Enter your new password"
+                                helperText={PASSWORD_REQUIREMENTS}
                               />
                               <Input
                                 id="confirm-password"

@@ -8,6 +8,7 @@ import { PrimaryButton } from '@/components/ui/buttons';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
+import { validatePassword, PASSWORD_REQUIREMENTS } from '@/lib/utils';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -36,8 +37,10 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+    // Enhanced password validation
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.errors.join('. '));
       setIsLoading(false);
       return;
     }
@@ -163,6 +166,7 @@ export default function RegisterPage() {
                   placeholder="••••••••"
                   disabled={isLoading}
                 />
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{PASSWORD_REQUIREMENTS}</p>
               </div>
             </div>
 

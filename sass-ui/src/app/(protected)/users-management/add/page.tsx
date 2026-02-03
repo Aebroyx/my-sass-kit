@@ -13,6 +13,7 @@ import { useGetActiveRoles } from '@/hooks/useRole';
 import { useGetMenuTree, useGetRoleMenus, useBulkSaveUserRightsAccess } from '@/hooks/useMenu';
 import { usePermission } from '@/hooks/usePermission';
 import toast from 'react-hot-toast';
+import { validatePassword, PASSWORD_REQUIREMENTS } from '@/lib/utils';
 
 export default function AddUserPage() {
   const router = useRouter();
@@ -79,9 +80,14 @@ export default function AddUserPage() {
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
     if (!formData.username.trim()) newErrors.username = 'Username is required';
-    if (!formData.password.trim()) newErrors.password = 'Password is required';
-    else if (formData.password.length < 8)
-      newErrors.password = 'Password must be at least 8 characters';
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    } else {
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        newErrors.password = passwordValidation.errors.join('. ');
+      }
+    }
     if (!formData.role) newErrors.role = 'Role is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -252,7 +258,7 @@ export default function AddUserPage() {
                   value={formData.password}
                   onChange={handleChange}
                   error={errors.password}
-                  helperText="Minimum 8 characters."
+                  helperText={PASSWORD_REQUIREMENTS}
                   autoComplete="new-password"
                   required
                 />

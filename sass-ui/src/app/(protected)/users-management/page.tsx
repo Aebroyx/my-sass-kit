@@ -259,7 +259,7 @@ export default function UsersManagementPage() {
           <ExportUsersButton />
           <SecondaryButton onClick={() => setIsImportModalOpen(true)}>
             <ArrowUpTrayIcon className="h-5 w-5" />
-            Import
+            Importr
           </SecondaryButton>
         </div>
       )}
